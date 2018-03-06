@@ -1,0 +1,45 @@
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th width="350">课程名称</th>
+                    <th width="100">姓名</th>
+                    <th width="80">性别</th>
+                    <th width="150">手机号码</th>
+                    <th width="120">预约日期</th>
+                    <th width="120">预约时间</th>
+                    <th>用户备注</th>
+                    <th width="100">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr >
+                        <td>{$vo['title']}</td>
+                        <td>{$vo['realname']}</td>
+                        <td><eq name="vo['gender']" value="1">男<else/>女</eq></td>
+                        <td>{$vo['phone']}</td>
+                        <td>{$vo['day']}</td>
+                        <td>{$vo['time']}</td>
+                        <td>{$vo['notes']}</td>
+                        <td class="operation-box">
+                            <a href="{:U('edit',array('id'=>$vo['id']))}" class="js-set-notes" data-id="{$vo['id']}">回访备注</a>
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
