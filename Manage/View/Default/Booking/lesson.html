@@ -1,0 +1,82 @@
+<style type="text/css">
+    .course-thumb-box {width:120px;height:60px;}
+</style>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">课程详情</div>
+        <div class="m-columnist-single">
+            <div class="bd">
+                <div class="thumb"><img src="{$Think.const.UPLOAD}/thumb/{$bookingInfo[thumb]|default='course-default.jpg'}"></div>
+                <div class="info">
+                    <div class="title">{$bookingInfo['title']}</div>
+                    <div class="desc">{$bookingInfo['description']}</div>
+                    <div class="price">￥{$bookingInfo['price']}</div>
+                </div>
+            </div>
+            <div class="right-info">
+                <div>
+                    <a href="{:U('edit',array('id'=>$bookingInfo['id']))}">编辑</a>
+                    <if condition="$bookingInfo['status'] eq 1">
+                        <a href="javascript:void(0)" data-url="{:U('change_course_status',array('id'=>$bookingInfo['id'],'status'=>0))}" class="js-change-status">下架</a>
+                        <else/>
+                        <a href="javascript:void(0)" data-url="{:U('change_course_status',array('id'=>$bookingInfo['id'],'status'=>1))}" class="js-change-status">上架</a>
+                    </if>
+                </div>
+                <div class="" style="margin-top:20px;">
+                    <if condition="$bookingInfo['status'] eq 1">
+                        <span class="btn btn-default">上架中</span>
+                        <else/>
+                        <span class="btn btn-danger">已下架</span>
+                    </if>
+                </div>
+            </div>
+        </div>
+
+        <a href="{:U('addlesson',array('bid'=>$bookingInfo['id']))}" style="margin:20px 0" class="btn btn-info">添加周期</a>
+        <empty name="lessonList">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0" >
+                <thead>
+                <tr>
+                    <th width="">标题</th>
+                    <th width="150">月份</th>
+                    <th width="200">培训日</th>
+                    <th width="80">预约人数</th>
+                    <th width="80">状态</th>
+                    <th width="200">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="lessonList" item="vo">
+                    <tr class="item">
+                        <td class="js-title">{$vo['title']}</td>
+                        <td class="">{$vo['lesson_month']}</td>
+                        <td class="">{$vo['lesson_day']}</td>
+                        <td>{$vo['buy_num']}</td>
+                        <td class="">
+                            <eq name="vo['status']" value="1">
+                                <span class="text-success">上架</span>
+                                <else/>
+                                <span class="text-muted">下架</span>
+                            </eq>
+                        </td>
+                        <td class="operation-box">
+                            <a href="{:U('editlesson',array('id'=>$vo['id']))}">编辑</a>
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+
+

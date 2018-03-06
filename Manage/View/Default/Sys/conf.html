@@ -1,0 +1,41 @@
+{/*--conf--*/}
+<div>
+    <form class="form-horizontal" role="form" name="conf-form" action="{:U('save_conf')}">
+        <div class="form-group">
+            <label for="sys-name" class="col-lg-1 control-label">站点名称：</label>
+            <div class="col-lg-3">
+                <input type="text" name="site_name" value="{$output['config']['site_name']}" class="form-control"
+                       id="sys-name"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-1 control-label">客服电话：</label>
+            <div class="col-lg-3">
+                <input type="text" name="tel" value="{$output['config']['tel']}" class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-1 control-label">邮箱：</label>
+            <div class="col-lg-3">
+                <input type="text" name="email" value="{$output['config']['email']}" class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-1 control-label">QQ：</label>
+            <div class="col-lg-3"><input type="text" name="qq" value="{$output['config']['qq']}" class="form-control"/></div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-1 control-label">新浪微博：</label>
+            <div class="col-lg-3"><input type="text" name="weibo" value="{$output['config']['weibo']}" class="form-control"/></div>
+        </div>
+        <div class="form-group">
+            <label class="col-lg-1 control-label">ICP备案：</label>
+            <div class="col-lg-3"><input type="text" name="icp" value="{$output['config']['icp']}" class="form-control"/></div>
+        </div>
+        <div class="form-group">
+            <div class="col-lg-offset-1 col-lg-3">
+                <input type="submit" value="保存" class="btn btn-block btn-info"/>
+            </div>
+        </div>
+    </form>
+</div>

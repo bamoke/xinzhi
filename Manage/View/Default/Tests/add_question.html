@@ -1,0 +1,80 @@
+<div class="panel">
+    <div class="panel-heading">
+        <div class="u-page-title">添加测试试题</div>
+    </div>
+    <div class="panel-body">
+        <form name="add-question-form" id="questionForm" class="form form-horizontal" action="{:U('a_add_question')}">
+            <empty name="Think.get.tid">
+                <input type="hidden" name="question_type" value="1"/>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">试题类别:</label>
+                    <div class="col-xs-5">
+                        <select name="question_cate" class="form-control">
+                            <option value="">请选择类别</option>
+                            <foreach name="output['cateList']" item="v">
+                                <option value="{$v['id']}">{$v['name']}</option>
+                            </foreach>
+                        </select>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <else/>
+                <input type="hidden" name="question_type" value="2"/>
+                <input type="hidden" name="tests_id" value="{$Think.get.tid}"/>
+            </empty>
+
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>问题:</label>
+                <div class="col-xs-5">
+                    <textarea name="ask" rows="2" class="form-control" placeholder="请填写问题"></textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">试题类型:</label>
+                <div class="col-xs-5">
+                    <select name="answer_type" class="form-control" id="js-question-type">
+                        <option value="1">单选题</option>
+                        <option value="2">多选题</option>
+                        <option value="3">判断题</option>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>试题答案:</label>
+                <div class="col-xs-5">
+                    <div class="m-answer" id="js-answer-box">
+                        <div class="answer-item">
+                            <input class="correct-input js-correct-type" type="radio" name="correct[]" value="0">
+                            <textarea class="answer-input" name="answer[]" rows="2"></textarea>
+                            <div class="right-box"></div>
+                        </div>
+                        <div class="answer-item">
+                            <input class="correct-input js-correct-type" type="radio" name="correct[]" value="1">
+                            <textarea class="answer-input" name="answer[]" rows="2"></textarea>
+                            <div class="right-box"></div>
+                        </div>
+                        <div class="bot"><a href="javascript:" data-type="1" id="js-add-answer" class="add-btn">添加答案</a></div>
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">正确答案直接在答案中选择</div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>试题解析:</label>
+                <div class="col-xs-5">
+                    <textarea name="analysis" rows="5" class="form-control" placeholder="500字符以内"></textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

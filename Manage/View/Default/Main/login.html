@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <title>{$output['title']}</title>
+    <link href="__MODULE_ASSET__Css/font-awesome.min.css" rel="stylesheet">
+    <link href="__PUBLIC__/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__MODULE_ASSET__Css/default.css" rel="stylesheet">
+    {//JavaScript Setting}
+    <present name="output['script']">
+        <assign name="script" value="$output['script']"/>
+        <else/>
+        <assign name="script" value="common/init"/>
+    </present>
+    <script type="text/javascript" src="__PUBLIC__/lib/require/require.js" data-main="__MODULE_ASSET__/Js/{$script}"></script>
+    <style type="text/css">
+        @keyframes bgAnimation{
+            0% {background-color:#176eff;}
+            /*25% {background-color:#17e1ff;}*/
+            50% {background-color:#17ffbb;}
+            100% {background-color:#176eff;}
+        }
+        body {background-color:#176eff;animation:bgAnimation 5s linear infinite}
+    </style>
+</head>
+<body>
+<div>
+
+    <div class="login-form-wrap">
+        <div class="login-page-title"></div>
+        <h2 class="caption text-center">用户登录</h2>
+        <form name="loginform" role="form" action="{:U('login')}" method="post">
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="icon-user"></i></span>
+                    <input type="text" name="username" class="form-control" placeholder="请输入用户名" value=""/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="icon-lock"></i></span>
+                    <input type="password" name="password" class="form-control" value=""/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-xs-7">
+                        <input type="text" name="code" class="form-control" placeholder="请输入验证码" />
+                    </div>
+                    <div class="col-xs-5 text-right">
+                        <img id="verifyCode" src="{:U('Main/code')}" style="cursor: pointer"/>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger form-control">登录</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+

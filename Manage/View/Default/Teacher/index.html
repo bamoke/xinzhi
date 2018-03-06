@@ -1,0 +1,40 @@
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th>讲师头像</th>
+                    <th width="200">姓名</th>
+                    <th width="300">职称\职位</th>
+                    <th>课程数</th>
+                    <th>专栏数</th>
+                    <th width="80">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr>
+                        <td><div class="avatar-box"><img src="{$Think.const.UPLOAD}/avatar/{$vo['avatar']}" class="avatar" /></div> </td>
+                        <td>{$vo['name']}</td>
+                        <td>{$vo['position']}</td>
+                        <td>{$vo['course_num']}</td>
+                        <td>{$vo['columnist_num']}</td>
+                        <td><a href="{:U('edit',array('id'=>$vo['id']))}">修改</a> </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

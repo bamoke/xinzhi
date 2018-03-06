@@ -1,0 +1,86 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="m-top-search">
+            <form name="" class="form form-inline" action="{:U('index')}" method="get">
+                <div class="form-group">
+                    <label class="">关键字：</label>
+                    <input class="form-control" name="keyword" maxlength="50" type="text" value="" placeholder="请输入订单号">
+                </div>
+                <div class="form-group">
+                    <label class="">订单状态：</label>
+
+                        <select name="status" class="form-control">
+                            <assign name="status" value="$Think.get.status"/>
+                            <option value="">全部</option>
+                            <option value="0" <if condition="0 eq $status and is_numeric($status)">selected</if>>已删除</option>
+                            <option value="1" <if condition="1 eq $status">selected</if>>未支付</option>
+                            <option value="2" <if condition="2 eq $status">selected</if>>已支付</option>
+                        </select>
+
+                </div>
+<!--                <div class="form-group">
+                    <label class="control-label col-xs-1">起止时间：</label>
+                    <div class="col-xs-2">
+                        <div class="input-group">
+                            <input class="form-control" id="order_start_date" name="s_date" size="60" type="text" value="" placeholder="开始日期" readonly>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="input-group">
+                            <input class="form-control" id="order_end_date" name="e_date" size="60" type="text" value="" placeholder="截至日期" readonly>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                        </div>
+                    </div>
+                </div>-->
+
+                <div class="form-group">
+                    <div class="col-xs-offset-1 col-xs-4">
+                        <input class="form-control btn btn-info" type="submit" value="搜索">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body">
+        <table class="table js-table-list">
+            <thead>
+            <tr>
+                <th width="220">订单号</th>
+                <th width="220">交易号</th>
+                <th width="200">会员昵称</th>
+                <th width="80">订单金额</th>
+                <th width="200">创建时间</th>
+                <th width="80">支付状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <foreach name="orderData" item="list">
+                <tr>
+                    <td>{$list['order_num']}</td>
+                    <td>{$list['trade_num']}</td>
+                    <td>{$list['nickname']}</td>
+                    <td>{$list['amount']}</td>
+                    <td>{$list['create_time']}</td>
+                    <td>
+                        <switch name="list['status']">
+                            <case value="0"><span class="text-default">已删除</span></case>
+                            <case value="1"><span class="text-danger">待支付</span></case>
+                            <case value="2"><span class="text-success">已支付</span></case>
+                        </switch>
+                    </td>
+                    <td>
+                        <a href="{:U('detail',array('id'=>$list['id']))}" class="btn btn-default" >订单详情</a>
+                    </td>
+                </tr>
+            </foreach>
+
+            </tbody>
+        </table>
+        <div class="pagination">{$output['page']}</div>
+    </div>
+</div>

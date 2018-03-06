@@ -1,0 +1,38 @@
+<assign name="orderInfo" value="$output['orderInfo']"/>
+<assign name="goodsInfo" value="$output['goodsInfo']"/>
+<assign name="memberInfo" value="$output['memberInfo']"/>
+<div class="panel">
+    <div class="panel-heading">订单信息</div>
+    <div class="panel-body">
+        <ul class="list-group">
+            <li class="list-group-item">订单号：{$orderInfo['order_num']}</li>
+            <li class="list-group-item">交易号：{$orderInfo['trade_num']}</li>
+            <li class="list-group-item">金额：{$orderInfo['amount']}</li>
+            <li class="list-group-item">创建时间：{$orderInfo['create_time']}</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-heading">商品信息</div>
+    <div class="panel-body">
+        <foreach name="goodsInfo" item="item">
+            <ul class="list-group">
+                <li class="list-group-item">商品名称：{$item['pro_name']}</li>
+                <li class="list-group-item">购买数量：{$item['num']}</li>
+                <li class="list-group-item">价格：{$item['pro_price']}</li>
+            </ul>
+        </foreach>
+
+    </div>
+</div>
+
+<div class="panel">
+    <!--<div class="panel-heading">购买人信息</div>-->
+    <div class="panel-body">
+        <ul class="list-group">
+            <li class="list-group-item">购买人：{$memberInfo['nickname']}</li>
+        </ul>
+    </div>
+</div>
+<div style="text-align: center;margin:40px 0;"><div class="btn btn-info" onclick="window.history.back()">返回订单列表</div></div>

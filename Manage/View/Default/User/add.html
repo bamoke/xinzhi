@@ -1,0 +1,23 @@
+<div>
+    <form class="form-horizontal" role="form" name="user-form" action="{:U('save')}">
+        <div class="form-group">
+            <label for="username" class="col-lg-1 control-label">用户名：</label>
+            <div class="col-lg-3">
+                <input type="text" name="username" value="" class="form-control" id="username" placeholder="建议使用工号作为用户名"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="col-lg-1 control-label">设置密码：</label>
+            <div class="col-lg-3"><input type="password" name="password" class="form-control" id="password" placeholder="请输入密码" /></div>
+        </div>
+        <div class="form-group">
+            <label for="realname" class="col-lg-1 control-label">称呼或姓名：</label>
+            <div class="col-lg-3"><input type="text" name="realname" class="form-control" id="realname" placeholder="如：小王或王思聪" /></div>
+        </div>
+        <div class="form-group">
+            <div class="col-lg-offset-1 col-lg-3">
+                <input type="submit" value="提交" class="btn btn-block btn-info"/>
+            </div>
+        </div>
+    </form>
+</div>

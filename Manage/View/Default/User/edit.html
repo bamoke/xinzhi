@@ -1,0 +1,28 @@
+<div>
+    <form class="form-horizontal" role="form" name="user-form" action="{:U('update')}">
+        <input type="hidden" name="id" value="{$output.info.id}">
+        <div class="form-group">
+            <label for="username" class="col-lg-1 control-label">用户名：</label>
+            <div class="col-lg-3">
+                <input type="text" name="username" value="{$output.info.username}" class="form-control" id="username" disabled/>
+            </div>
+        </div>
+<!--        <div class="form-group">
+            <label for="password" class="col-lg-1 control-label">设置密码：</label>
+            <div class="col-lg-3"><input type="password" name="password" class="form-control" id="password" placeholder="请输入密码" /></div>
+        </div>-->
+        <div class="form-group">
+            <label for="realname" class="col-lg-1 control-label">称呼或姓名：</label>
+            <div class="col-lg-3"><input type="text" value="{$output.info.realname}" name="realname" class="form-control" id="realname" /></div>
+        </div>
+        <div class="form-group">
+            <label for="email" class="col-lg-1 control-label">Email：</label>
+            <div class="col-lg-3"><input type="text" value="{$output.info.email}" name="email" class="form-control" id="email" /></div>
+        </div>
+        <div class="form-group">
+            <div class="col-lg-offset-1 col-lg-3">
+                <input type="submit" value="提交" class="btn btn-block btn-info"/>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,93 @@
+<style>
+    #calendar {box-sizing:border-box;background-color:#f8f8f8;border-top:1px solid #ccc;border-left:1px solid #ccc;}
+    .datetimepicker-inline {width:100%;}
+    .datetimepicker table {width: 100%;}
+    .fc-header-title h2 {margin:0;font-size:18px;}
+    #calendar table td {
+        height:50px;
+        text-align: center;
+        vertical-align: middle;
+        border-right:1px solid #ccc;
+        border-bottom:1px solid #ccc;
+    }
+    #calendar table td.selected {
+        background-color:#5bc0de;
+        color:#fff;
+    }
+    #calendar table td.disabled {color:#ccc;}
+</style>
+<assign name="info" value="$output['info']"/>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <form name="lesson-form" class="form form-horizontal" action="{:U('a_update_lesson')}" id="lessonEditForm">
+            <input type="hidden" name="id" value="{$Think.get.id}"/>
+            <input type="hidden" name="bid" value="{$info['booking_id']}"/>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>标题:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="{$info['title']}" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>月份:</label>
+                <div class="col-xs-2">
+                    <select name="month" class="form-control" id="js-lesson-month">
+                    <for start="$output['startMonth']" end="13">
+                        <option value="{$i}" <eq name="i" value="$info['month']">selected</eq> >{$i}月</option>
+                    </for>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>上课日:</label>
+                <div class="col-xs-5">
+                    <div id="calendar">
+                        <table width="100%" class="table">
+                            <thead></thead>
+                            <tbody>
+                            <php>
+                                $html='<tr>';
+                                for($i=1;$i<=35;$i++){
+                                    $val = $i>9?$i:'0'.$i;
+                                if(in_array($i,$info['day'])){
+                                $html .='<td class="selected">'.$val.'</td>';
+                                }elseif($i > 31) {
+                                $html .='<td class="disabled"></td>';
+                                }else {
+                                $html .='<td>'.$val.'</td>';
+                                }
+
+                                if($i % 7 == 0){
+                                $html .='</tr><tr>';
+                                }
+                                }
+                                echo $html;
+                            </php>
+                            </tbody>
+                        </table>
+                    </div>
+                    <input type="text" name="day" value="{$info['lesson_day']}" id="js-lesson-day" class="fade">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">状态:</label>
+                <div class="col-xs-2">
+                    <label class="radio-inline"><input name="status"  type="radio" value="1" <eq name="info['status']" value="1">checked</eq> />上架 </label>
+                    <label class="radio-inline"><input name="status" type="radio" value="0" <neq name="info['status']" value="1">checked</neq> />下架 </label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

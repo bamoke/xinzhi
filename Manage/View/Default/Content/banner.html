@@ -1,0 +1,54 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-xs-2">
+                <include file="Content/side-nav"/>
+            </div>
+            <div class="col-xs-10">
+                <div class="u-page-title">
+                    <span class="caption"> {$pageTitle}</span>
+                    <a href="{:U('add',array('cid'=>$_GET['cid'],'page_type'=>$pageType))}" class="btn btn-danger">添加Banner</a>
+                </div>
+                <div class="alert alert-info">
+                    <p>只有首页可以展示多张图片轮播。Banner尺寸宽度750px,高度300px</p>
+                </div>
+                <table class="table js-table-list">
+                    <thead>
+                    <tr>
+                        <th width="300">缩略图</th>
+                        <th width="200">说明</th>
+                        <th>展示位置</th>
+                        <th width="200">链接地址</th>
+                        <th>显示</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <foreach name="data" item="list">
+                        <tr>
+                            <td><img class="u-banner-thumb" src="{$Think.Upload}/images/{$list['img']}"></td>
+                            <td>{$list['title']}</td>
+                            <td>{$position[$list['position_key']]}</td>
+                            <td>{$list['url']}</td>
+                            <td>
+                                <if condition="$list['status'] eq 1">
+                                    <span class="text-success">正常</span>
+                                    <else/>
+                                    不显示
+                                </if>
+                            </td>
+                            <td class="operation-box">
+                                <a href="{:U('edit',array('id'=>$list['id'],'page_type'=>$pageType,'cid'=>$_GET['cid']))}">修改</a>
+                                <a data-url="{:U('del',array('id'=>$list['id'],'page_type'=>$pageType))}" class="js-del-one">删除</a>
+                            </td>
+                        </tr>
+                    </foreach>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </div>
+</div>

@@ -1,0 +1,57 @@
+<style type="text/css">
+    .course-thumb-box {width:120px;height:60px;}
+</style>
+
+<div class="panel">
+    <div class="panel-body">
+        <a href="{:U('add')}" class="btn btn-info">添加预约课程</a>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th width="80" id="js-order-title" data-url="{:U('changeorder')}">排序</th>
+                    <th width="150">封面</th>
+                    <th width="300">课程名称</th>
+                    <th width="100">价格</th>
+                    <th width="65">状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr <if condition="$vo['recommend'] eq 1">style="background-color:#fff7e5;"</if> >
+                        <td><input type="sort" min="1" data-id="{$vo['id']}" data-val="{$vo['sort']}" class="form-control js-order-input" value="{$vo['sort']}"></td>
+                        <td><div class="course-thumb-box"><img width="120" height="60" src="{$Think.const.UPLOAD}/thumb/{$vo['thumb']|default='course-default.jpg'}" /></div> </td>
+                        <td>{$vo['title']}</td>
+                        <td>{$vo['price']}</td>
+                        <td>
+                            <if condition="$vo['status'] eq 1">
+                                <span class="text-success">上架中</span>
+                                <else/>
+                                <span class="text-danger">已下架</span>
+                            </if>
+                        </td>
+                        <td class="operation-box">
+                            <a href="{:U('edit',array('id'=>$vo['id']))}">编辑</a><span class="fg">|</span><a href="{:U('lesson',array('bid'=>$vo['id']))}">课程表</a>
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

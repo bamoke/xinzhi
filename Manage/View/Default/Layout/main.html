@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <title>{$pageName}</title>
+    <link href="__MODULE_ASSET__Css/font-awesome.min.css" rel="stylesheet">
+    <link href="__PUBLIC__/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="__PUBLIC__/lib/bootstrap/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="__MODULE_ASSET__Css/default.css" rel="stylesheet">
+    {//JavaScript Setting}
+    <present name="output['script']">
+        <assign name="script" value="$output['script']"/>
+        <else/>
+        <assign name="script" value="Common/init"/>
+    </present>
+    <script type="text/javascript" src="__PUBLIC__/lib/require/require.js" data-main="__MODULE_ASSET__Js/{$script}"></script>
+</head>
+<body>
+<include file="Layout/header"/>
+<div class="g-wrap">
+    <include file="Layout/side-menu"/>
+    <div class="g-main-wrap">
+        <include file="Layout/main-top"/>
+        <div class="g-main-content">
+            {__REPLACE__}
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+

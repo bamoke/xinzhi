@@ -1,0 +1,56 @@
+<div class="panel">
+    <div class="panel-body">
+        <div  class="u-page-title"><span class="caption">添加新闻资讯</span> </div>
+        <form name="news-form" class="form form-horizontal" action="{:U('save',array('page_type'=>$_GET['page_type']))}">
+            <input type="hidden" name="cid" value="{$Think.get.cid}">
+            <div class="form-group">
+                <label class="control-label col-xs-1">新闻标题:</label>
+                <div class="col-xs-8">
+                    <input type="text" name="title" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">是否推荐:</label>
+                <div class="col-xs-8">
+                    <label class="checkbox-inline"><input type="radio" name="recommend" value="1"  />是</label>
+                    <label class="checkbox-inline"><input type="radio" name="recommend" value="0" checked />否</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">来源:</label>
+                <div class="col-xs-8">
+                    <input type="text" name="origin" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">外部链接:</label>
+                <div class="col-xs-8">
+                    <input type="text" name="url" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">关键词:</label>
+                <div class="col-xs-8">
+                    <input type="text" name="keywords" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">新闻描述:</label>
+                <div class="col-xs-8">
+                    <textarea name="description" class="form-control"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">内容详情:</label>
+                <div class="col-xs-8">
+                    <script id="editorContainer" name="content"></script>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-2 col-xs-offset-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回列表</button></div>
+                <div class="col-xs-4"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

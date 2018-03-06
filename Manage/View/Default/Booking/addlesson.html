@@ -1,0 +1,118 @@
+<style>
+    #calendar {box-sizing:border-box;background-color:#f8f8f8;border-top:1px solid #ccc;border-left:1px solid #ccc;}
+    .datetimepicker-inline {width:100%;}
+    .datetimepicker table {width: 100%;}
+    .fc-header-title h2 {margin:0;font-size:18px;}
+    #calendar table td {
+        height:50px;
+        text-align: center;
+        vertical-align: middle;
+        border-right:1px solid #ccc;
+        border-bottom:1px solid #ccc;
+    }
+    #calendar table td.selected {
+        background-color:#5bc0de;
+        color:#fff;
+    }
+    #calendar table td.disabled {color:#ccc;}
+</style>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <form name="lesson-form" class="form form-horizontal" action="{:U('a_add_lesson')}" id="lessonAddForm">
+            <input type="hidden" name="bid" value="{$Think.get.bid}"/>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>标题:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>月份:</label>
+                <div class="col-xs-2">
+                    <select name="month" class="form-control" id="js-lesson-month">
+                    <for start="$output['startMonth']" end="13">
+                        <option value="{$i}">{$i}月</option>
+                    </for>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>上课日:</label>
+                <div class="col-xs-5">
+                    <div id="calendar">
+                        <table width="100%" class="table">
+                            <thead></thead>
+                            <tbody>
+                            <tr>
+                                <td>01</td>
+                                <td>02</td>
+                                <td>03</td>
+                                <td>04</td>
+                                <td>05</td>
+                                <td>06</td>
+                                <td>07</td>
+                            </tr>
+                            <tr>
+                                <td>08</td>
+                                <td>09</td>
+                                <td>10</td>
+                                <td>11</td>
+                                <td>12</td>
+                                <td>13</td>
+                                <td>14</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>16</td>
+                                <td>17</td>
+                                <td>18</td>
+                                <td>19</td>
+                                <td>20</td>
+                                <td>21</td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>23</td>
+                                <td>24</td>
+                                <td>25</td>
+                                <td>26</td>
+                                <td>27</td>
+                                <td>28</td>
+                            </tr>
+                            <tr>
+                                <td>29</td>
+                                <td>30</td>
+                                <td>31</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <input type="text" name="day" value="" id="js-lesson-day" class="fade">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">状态:</label>
+                <div class="col-xs-2">
+                    <label class="radio-inline"><input name="status"  type="radio" value="1"/>上架 </label>
+                    <label class="radio-inline"><input name="status" type="radio" value="0" checked/>下架 </label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

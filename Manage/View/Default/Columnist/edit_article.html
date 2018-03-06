@@ -1,0 +1,69 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <form name="edit-article-form" class="form form-horizontal" action="{:U('a_update_article',array('id'=>$articleInfo['id']))}">
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">文章名称:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="{$articleInfo['title']}" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <assign name="type" value="$articleInfo['type']"/>
+            <if condition="(2 eq $type) or (3 eq $type)">
+                <div class="form-group">
+                    <label class="control-label col-xs-2">资源地址:</label>
+                    <div class="col-xs-5">
+                        <input type="text" name="source" class="form-control" value="{$articleInfo['source']}" placeholder="填写音、视频完整地址">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+            </if>
+
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <empty name="articleInfo['thumb']">
+                            <a href="javascript:" class="add-btn js-add-btn"></a>
+                            <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                            <else/>
+                            <a href="javascript:" class="add-btn js-add-btn hidden"></a>
+                            <div class="thumb-box">
+                                <img class="thumb" src="{$Think.const.UPLOAD}/thumb/{$articleInfo['thumb']}">
+                                <span class="del-btn">删除</span>
+                            </div>
+                            <input type="hidden" class="js-old-thumb" name="oldthumb" value="{$articleInfo['thumb']}">
+                        </empty>
+                        <input type="file" name="thumb" class="js-file-input" style="opacity: 0" >
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">内容详情:</label>
+                <div class="col-xs-8">
+                    <script id="editorContainer" name="content">{$articleInfo['content']}</script>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">上架:</label>
+                <div class="col-xs-5">
+                    <label class="radio-inline"><input type="radio" name="status" value="1" <if condition="$articleInfo['status'] eq 1">checked</if>>上架</label>
+                    <label class="radio-inline"><input type="radio" name="status" value="0" <if condition="$articleInfo['status'] neq 1">checked</if>>下架</label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

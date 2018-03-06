@@ -1,0 +1,22 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">选择内容类型</div>
+        <assign name="id" value="$Think.get.id" />
+        <div class="m-article-type">
+            <a href="{:U('add_article',array('clid'=>$id,'type'=>1))}" class="item">
+                <div class="icon icon-image"></div>
+                <div class="caption">图文</div>
+            </a>
+            <a href="{:U('add_article',array('clid'=>$id,'type'=>2))}" class="item">
+                <div class="icon icon-audio"></div>
+                <div class="caption">音频</div>
+            </a>
+            <a href="{:U('add_article',array('clid'=>$id,'type'=>3))}" class="item">
+                <div class="icon icon-video"></div>
+                <div class="caption">视频</div>
+            </a>
+        </div>
+
+    </div>
+</div>
+

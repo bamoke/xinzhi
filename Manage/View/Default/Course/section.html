@@ -1,0 +1,153 @@
+<style type="text/css">
+    .course-thumb-box {width:120px;height:60px;}
+</style>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">课程详情</div>
+        <div class="m-columnist-single">
+            <div class="bd">
+                <div class="thumb"><img src="{$Think.const.UPLOAD}/thumb/{$courseInfo[thumb]|default='course-default.jpg'}"></div>
+                <div class="info">
+                    <div class="title">{$courseInfo['title']}</div>
+                    <div class="desc">{$courseInfo['description']}</div>
+                    <div class="price">￥{$courseInfo['price']}</div>
+                    <div class="total-info"><span>开通人数:{$courseInfo['buy_num']}</span></div>
+                </div>
+            </div>
+            <div class="right-info">
+                <div>
+                    <a href="{:U('edit',array('id'=>$courseInfo['id']))}">编辑</a>
+                    <if condition="$courseInfo['status'] eq 1">
+                        <a href="javascript:void(0)" data-url="{:U('change_course_status',array('id'=>$courseInfo['id'],'status'=>0))}" class="js-change-status">下架</a>
+                        <else/>
+                        <a href="javascript:void(0)" data-url="{:U('change_course_status',array('id'=>$courseInfo['id'],'status'=>1))}" class="js-change-status">上架</a>
+                    </if>
+                </div>
+                <div class="" style="margin-top:20px;">
+                    <if condition="$courseInfo['status'] eq 1">
+                        <span class="btn btn-default">上架中</span>
+                        <else/>
+                        <span class="btn btn-danger">已下架</span>
+                    </if>
+                </div>
+            </div>
+        </div>
+
+        <a href="{:U('addsection',array('cid'=>$courseInfo['id']))}" style="margin:20px 0" class="btn btn-info">添加课程章节</a>
+        <empty name="sectionList">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0" >
+                <thead>
+                <tr>
+                    <th width="">章节名称</th>
+                    <th width="150">类型</th>
+                    <th width="150">浏览量</th>
+                    <th width="200">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="sectionList" item="vo">
+                    <tr class="item">
+                        <td class="js-title">{$vo['title']}</td>
+                        <td class="">{$typeArr[$vo['type']]}</td>
+                        <td>{$vo['view_num']}</td>
+                        <td class="operation-box">
+                            <a href="{:U('updatesection',array('id'=>$vo['id']))}">编辑</a>
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="sectionModal" style="width:800px;left:50%;margin-left:-400px;" role="dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">添加章节</h4>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" id="sectionForm" action="{:U('a_add_section')}" style="display: none">
+                <input type="hidden" name="course_id" value="{$Think.get.cid}">
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">章节标题:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="title" placeholder="章节标题">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">时长:</label>
+                    <div class="col-xs-6">
+                        <input type="text" name="time_long" class="form-control" value="" placeholder="请输入时长，如45分32秒表示为45:32">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">资源地址:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="source" placeholder="请输入视频资源地址">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+
+            </form>
+            <form class="form-horizontal" id="sectionEditForm" action="{:U('a_update_section')}" style="display: none">
+                <input type="hidden" name="id" value="">
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">章节标题:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="title" placeholder="章节标题">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">时长:</label>
+                    <div class="col-xs-6">
+                        <input type="text" name="time_long" class="form-control" value="" placeholder="请输入时长，如45分32秒表示为45:32">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">资源地址:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="source" placeholder="请输入视频资源地址">
+                    </div>
+                    <div class="col-xs-4 tips">
+
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                关闭
+            </button>
+            <button type="button" class="btn btn-primary js-submit-section-form">
+                提交保存
+            </button>
+        </div>
+    </div>
+
+</div>
+

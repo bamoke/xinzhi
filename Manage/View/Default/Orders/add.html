@@ -1,0 +1,63 @@
+<div class="panel">
+    <div class="panel-body">
+        <div  class="alert alert-info">
+            后台订单只能添加已付款订单
+        </div>
+        <form name="order-form" class="form form-horizontal" action="{:U('save')}">
+            <div class="form-group">
+                <label class="control-label col-xs-1">订单号:</label>
+                <div class="col-xs-6">
+                    <input type="text" name="order_num" class="form-control" value="">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-1">交易号:</label>
+                <div class="col-xs-6">
+                    <input type="text" name="trade_num" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">购买产品:</label>
+                <div class="col-xs-6">
+                    <input type="hidden" name="pro_name">
+                    <select name="pro_id" class="js-pro-select">
+                        <option value="">请选择购买的产品</option>
+                        <foreach name="output['proList']" item="list">
+                            <option value="{$list['id']}">{$list['name']}</option>
+                        </foreach>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">用户名:</label>
+                <div class="col-xs-6 js-member_name" data-url="{:U('validate_name')}">
+                    <input type="text" name="member_name" class="form-control" value="" placeholder="请输入用户名">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">买入金额:</label>
+                <div class="col-xs-6">
+                    <input type="text" name="amount" class="form-control" value="">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">支付方式:</label>
+                <div class="col-xs-6">
+                    <input type="text" name="pay_way" class="form-control" value="" placeholder="如:支付宝、银行转账、微信">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">支付状态:</label>
+                <div class="col-xs-6">
+                    <label class="checkbox-inline"><input type="radio" name="status" value="2" checked  />已支付</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-2 col-xs-offset-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回列表</button></div>
+                <div class="col-xs-4"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

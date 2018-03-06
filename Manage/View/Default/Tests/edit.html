@@ -1,0 +1,94 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <assign name="info" value="$output['info']"/>
+        <form name="add-form" class="form form-horizontal" action="{:U('a_update',array('id'=>$info['id']))}">
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>出题类型:</label>
+                <div class="col-xs-5"><input type="text" value="{$info['type'] ==1?'随机题':'固定题'}" readonly class="form-control"/></div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>试卷类别:</label>
+                <div class="col-xs-5">
+                    <select name="cate_id" class="form-control">
+                        <option value="0">请选择</option>
+                        <foreach name="output['cateList']" item="v">
+                            <option value="{$v['id']}" <if condition="$v['id'] eq $info['cate_id']">selected</if> >{$v['name']}</option>
+                        </foreach>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>测试标题:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="{$info['title']}" placeholder="建议6-20个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">题目数:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="question_num" value="{$info['question_num']}" placeholder="请填写题目数" class="form-control js-price">
+                </div>
+                <div class="col-xs-4 tips">数值必须为能被100整除的整数，如10,20,25,50</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">状态:</label>
+                <div class="col-xs-2">
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="1" {$info['status'] == 1 ? 'checked':''}>展示
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="0" {$info['status'] == 0 ? 'checked':''}>隐藏
+                    </label>
+                </div>
+                <div class="col-xs-3 tips"><div class="">请确保试卷的试题全部添加完再发布</div></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">推荐展示:</label>
+                <div class="col-xs-5">
+                    <label class="radio-inline">
+                        <input type="radio" name="recommend" value="1" {$info['recommend'] == 1 ? 'checked':''}>是
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="recommend" value="0" {$info['recommend'] == 0 ? 'checked':''}>否
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>测试描述:</label>
+                <div class="col-xs-5">
+                    <textarea name="description" rows="10" class="form-control" placeholder="200字符以内">{$info['description']}</textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">是否免费:</label>
+                <div class="col-xs-4 js-isfree-radio">
+                    <label class="radio-inline">
+                        <input type="radio" name="isfree" value="1" {$info['isfree'] == 1 ? 'checked':''} > 免费
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="isfree" value="0" {$info['isfree'] != 1 ? 'checked':''} > 收费
+                    </label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">价格:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="price" value="{$info['price']}" placeholder="请填入整数或小数" class="form-control js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

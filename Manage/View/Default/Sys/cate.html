@@ -1,0 +1,48 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="btn btn-info js-add-parent">添加一级分类</div>
+        <div class="m-cate-tree" id="cateTree" data-del-url="{:U('del_cate')}">
+            {$output['tree']}
+        </div>
+    </div>
+</div>
+<!--modal-->
+<div class="modal" id="cateModal" style="width:800px;" role="dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">创建分类</h4>
+        </div>
+        <div class="modal-body">
+            <form class="form-horizontal" id="cateForm" action="{:U('save_cate')}">
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">分类名称:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="name" placeholder="请输入分类名称">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">所属类别:</label>
+                    <div class="col-xs-6">
+                        <input type="text" class="form-control js-input-parent-name" value="一级类别" readonly>
+                        <input type="hidden" name="pid" value="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-xs-2 control-label">分类标识:</label>
+                    <div class="col-xs-6">
+                        <input class="form-control" type="text" name="identification" placeholder="请输入分类标识">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                关闭
+            </button>
+            <button type="button" class="btn btn-primary js-submit-cate-form">
+                提交保存
+            </button>
+        </div>
+    </div>
+
+</div>

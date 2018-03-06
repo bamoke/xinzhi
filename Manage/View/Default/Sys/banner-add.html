@@ -1,0 +1,53 @@
+<div class="panel">
+    <div class="panel-body">
+        <div  class="u-page-title"><span class="caption">添加Banner</span> </div>
+        <form name="banner-form" class="form form-horizontal js-banner-form" action="{:U('savebanner',array('t'=>'add'))}" onsubmit="return false;">
+            <div class="form-group">
+                <label class="control-label col-xs-1">展示位置:</label>
+                <div class="col-xs-2">
+                    <select name="position_key" class="form-control">
+                            <option value="1">首页banner</option>
+                            <option value="2">在线测试栏目</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">图片说明:</label>
+                <div class="col-xs-4">
+                    <input type="text" name="title" class="form-control" value="">
+                </div>
+                <div class="col-xs-2 tips"></div>
+            </div>
+<!--            <div class="form-group">
+                <label class="control-label col-xs-1">是否推荐:</label>
+                <div class="col-xs-8">
+                    <label class="checkbox-inline"><input type="radio" name="recommend" value="1"  />是</label>
+                    <label class="checkbox-inline"><input type="radio" name="recommend" value="0" checked />否</label>
+                </div>
+            </div>-->
+            <div class="form-group">
+                <label class="control-label col-xs-1">上传图片:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <a href="javascript:" class="add-btn js-add-btn"></a>
+                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                        <input type="file" name="img" class="js-file-input fade" >
+                    </div>
+                </div>
+                <div class="col-xs-2 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">链接地址:</label>
+                <div class="col-xs-4">
+                    <input type="text" name="url" class="form-control" value="">
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="col-xs-2 col-xs-offset-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回列表</button></div>
+                <div class="col-xs-4"><button type="submit" class="form-control btn-info">提交</button></div>
+            </div>
+        </form>
+    </div>
+</div>

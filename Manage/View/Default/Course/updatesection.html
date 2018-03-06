@@ -1,0 +1,49 @@
+<assign name="info" value="$output['info']"/>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <form name="add-section-form" id="sectionForm" class="form form-horizontal" action="{:U('a_update_section')}">
+            <input type="hidden" name="id" value="{$Think.get.id}"/>
+            <div class="form-group">
+                <label class="control-label col-xs-2">类型:</label>
+                <div class="col-xs-5">
+                    <select name="type" class="form-control" id="js-section-type">
+                        <option value="">请选择类型</option>
+                        <option value="2" <eq name="info['type']" value="1">selected</eq> >音频</option>
+                        <option value="3" <eq name="info['type']" value="2">selected</eq> >视频</option>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">章节名称:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="{$info['title']}" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">资源地址:</label>
+                <div class="col-xs-5">
+                    <textarea rows="3" name="source" class="form-control" placeholder="填写音、视频完整地址">{$info['source']}</textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">内容详情:<p>编辑器里面图片宽度小于1200px;建议750px</p></label>
+                <div class="col-xs-8">
+                    <script id="editorContainer" name="content">{$info['content']}</script>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

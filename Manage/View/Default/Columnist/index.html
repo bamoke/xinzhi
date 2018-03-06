@@ -1,0 +1,30 @@
+<div class="panel">
+    <div class="panel-body" style="padding:20px 0;">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <div class="m-columnist">
+                <foreach name="output['list']" item="vo">
+                    <div class="list">
+                        <div class="bd">
+                            <div class="thumb"><img src="{$Think.const.UPLOAD}/thumb/{$vo[thumb]|default='columnist-default.jpg'}"></div>
+                            <div class="info">
+                                <div class="title">{$vo['title']}</div>
+                                <div class="desc">{$vo['description']}</div>
+                                <div class="price">￥{$vo['price']}</div>
+                            </div>
+                        </div>
+                        <div class="operation-box"><a href="{:U('detail',array('id'=>$vo['id']))}">详情</a> </div>
+                    </div>
+                </foreach>
+            </div>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

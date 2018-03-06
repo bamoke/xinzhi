@@ -1,0 +1,52 @@
+<style type="text/css">
+    .course-thumb-box {width:120px;height:60px;}
+</style>
+<div class="panel">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-2"><a href="{:U('add_question')}" class="btn btn-info">添加测试题</a></div>
+        </div>
+
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th width="80">ID</th>
+                    <th width="">试题名称</th>
+                    <th width="100">类型</th>
+                    <th width="80">所属类别</th>
+                    <th width="180">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr>
+                        <td>{$vo['id']}</td>
+                        <td>{$vo['ask']}</td>
+                        <td>{$vo['answer_type_name']}</td>
+                        <td>{$vo['question_cate_name']}</td>
+                        <td>
+                            <a href="{:U('edit_question',array('id'=>$vo['id']))}">编辑</a>
+                            <a class="js-del-lib-question" href="javascript:" data-url="{:U('a_del_question',array('id'=>$vo['id']))}">删除</a>
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

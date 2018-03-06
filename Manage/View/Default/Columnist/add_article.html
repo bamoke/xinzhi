@@ -1,0 +1,62 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">添加专栏内容</div>
+        <form name="add-article-form" class="form form-horizontal" action="{:U('a_add_article')}">
+            <input type="hidden" name="columnist_id" value="{$Think.get.clid}">
+            <input type="hidden" name="type" value="{$Think.get.type}">
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">文章名称:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <assign name="type" value="$Think.get.type"/>
+            <if condition="(2 eq $type) or (3 eq $type)">
+                <div class="form-group">
+                    <label class="control-label col-xs-2">资源地址:</label>
+                    <div class="col-xs-5">
+                        <input type="text" name="source" class="form-control" placeholder="填写音、视频完整地址">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+            </if>
+
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <a href="javascript:" class="add-btn js-add-btn"></a>
+                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                        <input type="file" name="thumb" class="js-file-input" style="opacity: 0" >
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">内容详情:</label>
+                <div class="col-xs-8">
+                    <script id="editorContainer" name="content"></script>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">上架:</label>
+                <div class="col-xs-5">
+                    <label class="radio-inline"><input type="radio" name="status" value="1" checked>上架</label>
+                    <label class="radio-inline"><input type="radio" name="status" value="0">下架</label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

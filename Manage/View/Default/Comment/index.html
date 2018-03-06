@@ -1,0 +1,106 @@
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered m-product-list" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th>评论内容</th>
+                    <th width="120">昵称</th>
+                    <th width="80">类型</th>
+                    <th width="200">文章/课程标题</th>
+                    <th width="100">评论时间</th>
+                    <th width="80">审核</th>
+                    <th>回复</th>
+                    <th width="80">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr>
+                        <td class="js-comment-content">{$vo['content']}</td>
+                        <td>{$vo['nickname']}</td>
+                        <td>{$vo['type']}</td>
+                        <td>{$vo['pro_title']}</td>
+                        <td>{$vo['create_time']}</td>
+                        <td>
+                            <if condition="$vo['status'] eq 2">
+                                <span class="text-primary">不通过</span>
+                                <elseif condition="$vo['status'] eq 1"/>
+                                <span class="text-success">已审核</span>
+                                <else/>
+                                <span class="text-danger">未审核</span>
+                            </if>
+                        </td>
+                        <td>
+                            <if condition="$vo['reply'] eq null">
+                                <span class="text-muted">未回复</span>
+                                <else/>
+                                {$vo['reply']}
+                            </if>
+                        </td>
+                        <td>
+                            <if condition="$vo['status'] eq 0">
+                                <div class="dropdown">
+                                    <button type="button" class="btn btn-default dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">审核
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
+                                        <li role="presentation">
+                                            <a role="menuitem" class="js-status-btn" tabindex="-1" data-url="{:U('Comment/changestatus',array('id'=>$vo['id'],'t'=>1))}">审核通过</a>
+                                        </li>
+                                        <li role="presentation">
+                                            <a role="menuitem" class="js-status-btn" tabindex="-1" href="#" data-url="{:U('Comment/changestatus',array('id'=>$vo['id'],'t'=>2))}">不通过</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <elseif condition="$vo['status'] eq 1"/>
+                                    <if condition="$vo['reply'] eq null">
+                                        <a href="javascript:" data-commentid="{$vo['id']}" class="btn btn-default js-reply-btn">回复</a>
+                                    </if>
+                            </if>
+
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">回复评论</h4>
+            </div>
+            <form name="replyForm" role="form" id="jsReplyForm" action="{:U('Comment/reply')}">
+            <div class="modal-body">
+                <div id="js-reply-title" style="margin-bottom:20px;">#<span class="text-muted" style="margin:0 10px;"></span>#</div>
+
+                    <div class="form-group">
+                        <input type="hidden" name="comment_id" id="input-commentid" value=""/>
+                        <textarea class="form-control" name="content" placeholder="请输入回复内容"></textarea>
+                    </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary">提交更改</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+

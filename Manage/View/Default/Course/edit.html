@@ -1,0 +1,126 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">{$pageName}</div>
+        <assign name="courseInfo" value="$output['courseInfo']"/>
+        <form name="add-form" class="form form-horizontal" action="{:U('a_update',array('id'=>$courseInfo['id']))}">
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span> 所属类别:</label>
+                <div class="col-xs-5">
+                    <select name="cate_id" class="form-control">
+                        <option value="">请选择所属类别</option>
+                        <foreach name="output['cateList']" item="v">
+                            <option value="{$v['id']}" <if condition="$v['id'] eq $courseInfo['cate_id']">selected</if>>{$v['name']}</option>
+                        </foreach>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>专家\讲师:</label>
+                <div class="col-xs-5">
+                    <select name="teacher_id" class="form-control">
+                        <option value="">请选择专家\讲师</option>
+                        <foreach name="output['teacherList']" item="v">
+                            <option value="{$v['id']}" <if condition="$v['id'] eq $courseInfo['teacher_id']">selected</if>>{$v['name']}</option>
+                        </foreach>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>课程名称:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="{$courseInfo['title']}" placeholder="建议6-14个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">推荐展示:</label>
+                <div class="col-xs-5">
+                    <label class="radio-inline">
+                        <input type="radio" name="recommend" value="1" <if condition="1 eq $courseInfo['recommend']">checked</if>>是
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="recommend" value="0" <if condition="1 neq $courseInfo['recommend']">checked</if>>否
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>课程描述:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="description" class="form-control" placeholder="建议25个字符以内" value="{$courseInfo['description']}">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>适用人群:</label>
+                <div class="col-xs-5">
+                    <textarea name="main_people" class="form-control" placeholder="200字符以内">{$courseInfo['main_people']}</textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>学习目标:</label>
+                <div class="col-xs-5">
+                    <textarea name="study_target" class="form-control" placeholder="200字符以内">{$courseInfo['study_target']}</textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <empty name="courseInfo['thumb']">
+                            <a href="javascript:" class="add-btn js-add-btn"></a>
+                            <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                            <else/>
+                            <a href="javascript:" class="add-btn js-add-btn hidden"></a>
+                            <div class="thumb-box">
+                                <img class="thumb" src="{$Think.const.UPLOAD}/thumb/{$courseInfo['thumb']}">
+                                <span class="del-btn">删除</span>
+                            </div>
+                            <input type="hidden" class="js-old-thumb" name="oldthumb" value="{$courseInfo['thumb']}">
+                        </empty>
+                        <input type="file" name="thumb" class="js-file-input" style="opacity: 0" >
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">课程介绍详情:</label>
+                <div class="col-xs-8">
+                    <script id="editorContainer" name="content">{$courseInfo['content']}</script>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">是否免费:</label>
+                <div class="col-xs-4 js-isfree-radio">
+                    <label class="radio-inline">
+                        <input type="radio" name="isfree" value="1" <if condition="1 eq $courseInfo['isfree']">checked</if> > 免费
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="isfree" value="0" <if condition="0 eq $courseInfo['isfree']">checked</if>> 收费
+                    </label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">价格:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="price" value="{$courseInfo['price']}" placeholder="请填入整数或小数" class="form-control js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

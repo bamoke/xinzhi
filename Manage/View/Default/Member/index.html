@@ -1,0 +1,48 @@
+<div class="panel">
+    <div class="panel-body">
+        <empty name="output['list']">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th width="200">头像</th>
+                    <th width="200">昵称</th>
+                    <th>注册时间</th>
+                    <th>状态</th>
+                    <!--<th width="80">操作</th>-->
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="output['list']" item="vo">
+                    <tr>
+                        <td>
+                            <img src="{$vo.avatar|default='/Upload/avatar/default.png'}" class="avatar" width="48" height="48" style="border-radius:50%;"/>
+                        </td>
+                        <td>{$vo.nickname}</td>
+                        <td>{:date("Y-m-d H:i:s",$vo['reg_time'])}</td>
+
+                        <?php if ($vo['status'] == 1){?>
+                        <td class="text-success"><i class="icon icon-ok-circle"></i>正常</td>
+                        <?php }else {?>
+                        <td class="text-warning"><i class="icon icon-remove-circle"></i>禁用</td>
+                        <?php }?>
+
+                        <!--<td class="operation-box">-->
+                            <!--<a href="{:U('detail','id='.$vo['id'])}" class="edit">查看</a>-->
+                        <!--</td>-->
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

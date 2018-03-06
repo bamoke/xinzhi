@@ -1,0 +1,73 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="m-top-search">
+            <form name="" class="form form-inline" action="{:U('recharge')}" method="get">
+                <div class="form-group">
+                    <label class="control-label">关键字：</label>
+                    <input class="form-control" name="keyword" maxlength="50" type="text" value="{$Think.get.keyword}" placeholder="请输入用户名">                </div>
+                <div class="form-group">
+                    <label class="control-label">充值状态：</label>
+                        <select name="status" class="form-control">
+                            <option value="">全部</option>
+                            <option value="0" <heq name="Think.get.status" value="0">selected</heq>>未支付</option>
+                            <option value="1" <if condition="$Think.get.status eq 1">selected</if>>已支付</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                        <input class="form-control btn btn-info" type="submit" value="搜索">
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-body">
+        <empty name="rechargeData">
+            {$emptyHtml}
+            <else/>
+            <table class="table table-bordered" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr>
+                    <th width="200">用户名</th>
+                    <th width="100">充值金额</th>
+                    <th>充值日期</th>
+                    <th>状态</th>
+                    <th width="80">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <foreach name="rechargeData" item="vo">
+                    <tr>
+                        <td>{$vo.member_name}</td>
+                        <td>{$vo.amount}</td>
+                        <td>{$vo.create_time}</td>
+                        <?php if ($vo['status'] == 1){?>
+                        <td class="text-success"><i class="icon icon-ok-circle"></i>已支付</td>
+                        <?php }else {?>
+                        <td class="text-warning"><i class="icon icon-remove-circle"></i>未支付</td>
+                        <?php }?>
+
+                        <td width="100" class="operation-box">
+                            <if condition="$vo['status'] eq 1">
+                                无需操作
+                                <else/>
+                                <a data-url="{:U('confirm_recharge','id='.$vo['id'])}" class="btn btn-info" id="js-confirm-recharge">确认支付</a>
+                            </if>
+
+                        </td>
+                    </tr>
+                </foreach>
+
+                </tbody>
+            </table>
+        </empty>
+
+    </div>
+    <div class="panel-footer">
+        <div class="m-pagination">
+            {$output['paging']}
+        </div>
+    </div>
+</div>
+

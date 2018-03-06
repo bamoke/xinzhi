@@ -1,0 +1,69 @@
+<assign name="data" value="$output['info']"/>
+<div class="panel">
+    <div class="panel-body">
+        <div  class="u-page-title"><span class="caption">Banner修改</span> </div>
+        <form id="js-edit-form" name="banner-form" class="form form-horizontal" action="{:U('savebanner')}">
+            <input type="hidden" name="id" value="{$Think.get.id}">
+            <div class="form-group">
+                <label class="control-label col-xs-1">展示位置:</label>
+                <div class="col-xs-2">
+                    <select name="position_key" class="form-control">
+                        <option value="1" <if condition="$data['position_key'] eq 1">selected</if> >首页banner</option>
+                        <option value="2" <if condition="$data['position_key'] eq 2">selected</if> >在线测试栏目</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">图片说明:</label>
+                <div class="col-xs-4">
+                    <input type="text" name="title" class="form-control" value="{$data['title']}">
+                </div>
+                <div class="col-xs-2 tips"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-1">上传图片:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <empty name="data['img']">
+                            <a href="javascript:" class="add-btn js-add-btn"></a>
+                            <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                            <else/>
+                            <a href="javascript:" class="add-btn js-add-btn hidden"></a>
+                            <div class="thumb-box">
+                                <img class="thumb" src="{$Think.UPLOAD}/banner/{$data['img']}">
+                                <span class="del-btn">删除</span>
+                            </div>
+                            <input type="hidden" class="js-old-thumb" name="old_img" value="{$data['img']}">
+                        </empty>
+                        <input type="file" name="img" class="js-file-input fade"  >
+                    </div>
+                </div>
+                <div class="col-xs-2 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">链接地址:</label>
+                <div class="col-xs-6">
+                    <input type="text" name="url" class="form-control" value="{$data['url']}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">状态:</label>
+                <div class="col-xs-6">
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="1" <eq name="data['status']" value="1">checked</eq> > 显示
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="0" <neq name="data['status']" value="1">checked</neq> > 隐藏
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="col-xs-2 col-xs-offset-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回列表</button></div>
+                <div class="col-xs-4"><button type="submit" class="form-control btn-info">提交</button></div>
+            </div>
+        </form>
+    </div>
+</div>

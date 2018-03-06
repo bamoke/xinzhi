@@ -1,0 +1,38 @@
+<table class="table table-bordered" border="0" cellpadding="0" cellspacing="0">
+    <thead>
+    <tr>
+        <th width="200">用户</th>
+        <th width="200">称呼</th>
+        <th>状态</th>
+        <!--<th width="300">操作</th>-->
+    </tr>
+    </thead>
+    <tbody>
+    <volist name="output['list']" id="vo">
+        <tr>
+            <td>{$vo.username}</td>
+            <td>{$vo.realname}</td>
+            <?php if ($vo['status'] == 1){?>
+            <td class="text-success"><i class="icon icon-ok-circle"></i>正常</td>
+            <?php }else {?>
+            <td class="text-warning"><i class="icon icon-remove-circle"></i>禁用</td>
+            <?php }?>
+
+  <!--          <td class="operation-box">
+                <a href="{:U('edit','id='.$vo['id'])}" class="edit">编辑</a>|
+                <a href="javascript:" data-url="{:U('reset','id='.$vo[id])}">重置密码</a>|
+                <?php if($vo['status'] == 1){?>
+                    <a href="javascript:" data-url="{:U('disable',array('id'=>$vo['id'],'status'=>0))}">禁用</a>
+                <?php }else {?>
+                    <a href="javascript:" data-url="{:U('disable',array('id'=>$vo['id'],'status'=>1))}">启用</a>
+                <?php }?>
+
+            </td>-->
+        </tr>
+    </volist>
+
+    </tbody>
+</table>
+<div class="m-pagination">
+    {$outData['paging']}
+</div>

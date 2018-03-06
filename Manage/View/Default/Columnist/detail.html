@@ -1,0 +1,99 @@
+<style type="text/css">
+    .columnist-article {
+        margin:20px 0;
+    }
+    .columnist-article .top-bar {
+        display: -webkit-flex;
+        -webkit-justify-content: space-between;
+    }
+    .article-bar {
+        line-height: 40px;
+        height: 40px;
+        font-size: 14px;
+        text-align: justify;
+        color: #353535;
+        border-bottom:1px solid #f2f2f2;
+    }
+</style>
+<div class="panel">
+    <div class="panel-body">
+        <div class="u-page-title">专栏详情</div>
+        <div class="m-columnist-single">
+            <div class="bd">
+                <div class="thumb"><img src="{$Think.const.UPLOAD}/thumb/{$columnistInfo[thumb]|default='columnist-default.jpg'}"></div>
+                <div class="info">
+                    <div class="title">{$columnistInfo['title']}</div>
+                    <div class="desc">{$columnistInfo['description']}</div>
+                    <div class="price">￥{$columnistInfo['price']}</div>
+                    <div class="total-info"><span>开通人数:345</span></div>
+                </div>
+            </div>
+            <div class="right-info">
+                <div>
+                    <a href="{:U('edit',array('id'=>$columnistInfo['id']))}">编辑</a>
+                    <if condition="$columnistInfo['status'] eq 1">
+                        <a href="javascript:void(0)" data-url="{:U('change_columnist_status',array('id'=>$columnistInfo['id'],'status'=>0))}" class="js-change-status">下架</a>
+                        <else/>
+                        <a href="javascript:void(0)" data-url="{:U('change_columnist_status',array('id'=>$columnistInfo['id'],'status'=>1))}" class="js-change-status">上架</a>
+                    </if>
+                </div>
+                <div class="" style="margin-top:20px;">
+                    <if condition="$columnistInfo['status'] eq 1">
+                        <span class="btn btn-default">上架中</span>
+                        <else/>
+                        <span class="btn btn-danger">已下架</span>
+                    </if>
+                </div>
+            </div>
+        </div>
+
+        <div class="columnist-article">
+            <div class="top-bar">
+                <a href="{:U('choose_type',array('id'=>$columnistInfo['id']))}" class="btn btn-info">添加内容</a>
+                <div class="filter-box"></div>
+            </div>
+            <div class="article-bar">专栏内容</div>
+            <empty name="articleList">
+                {$emptyHtml}
+                <else/>
+                <div class="m-article-list">
+                    <foreach name="articleList" item="vo">
+                        <div class="list">
+                            <div class="type">
+                                <switch name="vo.type">
+                                    <case value="1"><span class="icon-image" title="图文"></span> </case>
+                                    <case value="2"><span class="icon-audio" title="音频"></span></case>
+                                    <case value="3"><span class="icon-video" title="视频"></span></case>
+                                </switch>
+                            </div>
+                            <div class="thumb"><img width="60" height="45" src="{$Think.const.UPLOAD}/thumb/{$vo['thumb']|default='columnist-article-detault.jpg'}" /> </div>
+                            <div class="info">
+                                <p class="title">{$vo['title']}</p>
+                                <p class="time">发布日期:{$vo['create_time']}</p>
+                            </div>
+                            <div class="view">访问量：{$vo['view_num']}</div>
+                            <div class="status">
+                                <if condition="$vo['status'] eq 1">
+                                    <span class="btn btn-default">上架中</span>
+                                    <else/>
+                                    <span class="btn btn-danger">已下架</span>
+                                </if>
+
+                            </div>
+                            <div class="operation">
+                                <a href="{:U('edit_article',array('id'=>$vo['id']))}">编辑</a>
+                                <if condition="$vo['status'] eq 1">
+                                    <a href="javascript:void(0)" data-url="{:U('change_article_status',array('id'=>$vo['id'],'status'=>0))}" class="js-change-status">下架</a>
+                                    <else/>
+                                    <a href="javascript:void(0)" data-url="{:U('change_article_status',array('id'=>$vo['id'],'status'=>1))}" class="js-change-status">上架</a>
+                                </if>
+                            </div>
+                        </div>
+                    </foreach>
+                </div>
+            </empty>
+        </div>
+
+    </div>
+</div>
+
