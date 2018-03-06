@@ -328,12 +328,13 @@ class BookingController extends AuthController
             ->field("L.*,concat(B.title,'-',BP.title) as title")
             ->join("__BOOKING__ as B on L.booking_id = B.id")
             ->join("__BOOKING_PHASE__ as BP on L.phase_id = BP.id")
-            ->order("id desc")
+            ->order("L.id desc")
             ->limit($page->firstRow.",".$page->listRows)
             ->select();
         $outData = array(
             'list'      => $list,
-            'paging'    => $paging
+            'paging'    => $paging,
+            "script"    =>CONTROLLER_NAME."/logs"
         );
         $this->assign('output',$outData);
         $this->display();
