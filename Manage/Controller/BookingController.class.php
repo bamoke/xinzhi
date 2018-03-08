@@ -341,6 +341,44 @@ class BookingController extends AuthController
     }
 
 
+    /** update notes */
+    public function update_notes (){
+        if(IS_POST){
+            $updateData = array(
+                "time"  =>I("post.time"),
+                "operator_id"   =>I("session.uid")
+            );
+            $where = array(
+                "id"    =>I("post.id")
+            );
+            $result = M("BookingLog")->data($updateData)->where($where)->save();
+            if($result !==false ){
+                $backData = array(
+                    "status"    =>!!1
+                );
+            }else {
+                $backData = array(
+                    "status"    =>!!0,
+                    "msg"       =>"数据更新错误，请联系技术人员"
+                );
+            }
+            $this->ajaxReturn($backData);
+        }
+    }
+
+    /*
+     * Page of calendar
+     */
+    public function calendar(){
+        $outData = array(
+            "script"    =>CONTROLLER_NAME."/calendar"
+        );
+        $this->assign('output',$outData);
+        $this->display();
+    }
+    
+
+
     /**
      * Delete old thumbnail
      * @param   $id     int product ID

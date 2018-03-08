@@ -4,17 +4,27 @@ use Think\Controller;
 class HomeController extends Controller {
 
     public function index(){
-//        $banner= M('Banner')->where('position_key=0')->select();
-        $columnList = M("Columnist")->field("id,title,description,thumb,isfree,price,subscribers")->where('status=1')->order('id desc,recommend desc')->limit('4')->select();
-        $courseList = M("Course")->field("id,title,description,thumb,isfree,price,study_num")->where('status=1')->order('id desc,recommend desc')->limit('4')->select();
-        $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-
-//            "banner"    =>$banner,
-            "columnist"     =>$columnList,
-            "courseList"    =>$courseList
-        );
+        $account = A("Account");
+        $memberId = $account->getMemberId();
+        $userInfo = M("Member")
+        ->alias("M")
+        ->field("M.mp_identification,M.balance,MI.nickname,MI.avatar")
+        ->join("__MEMBER_INFO__ as MI on M.id=MI.member_id")
+        ->where("M.id = $memberId")
+        ->fetchSql(false)
+        ->find();
+        if($userInfo){
+            $backData = array(
+                "errorCode" =>10000,
+                "errorMsg"  =>"success",
+                "info"      =>$userInfo
+            );
+        }else {
+            $backData = array(
+                "errorCode" =>10001,
+                "errorMsg"  =>"数据获取错误"
+            );
+        } 
         $this->ajaxReturn($backData);
     }
 

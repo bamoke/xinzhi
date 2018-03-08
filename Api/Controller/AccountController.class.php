@@ -114,7 +114,7 @@ class AccountController extends Controller {
     public function getMemberId(){
         $openid = $this->getopenid();
         $memberId = null;
-        $memberInfo = M("Member")->field("id,capital")->where(array("openid"=>$openid))->find();
+        $memberInfo = M("Member")->field("id")->where(array("openid"=>$openid))->find();
         if($memberInfo){
             $memberId = $memberInfo['id'];
         }
