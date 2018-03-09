@@ -41,7 +41,7 @@ class AccountController extends Controller {
                     "sessionkey" =>$sessionkey
                 );
                 $updateSession = $sessionModel->where(array("openid"=>$openid))->save($updateData);
-                if($updateSession){
+                if($updateSession !== false){
                     $backData = array(
                         "errorCode" =>10000,
                         "errorMsg"  =>'ok',
@@ -74,7 +74,7 @@ class AccountController extends Controller {
                 );
                 $insertSession = $sessionModel->add($insertSessionData);
 
-                // 1.5 创建个人资料;
+                // 1.5 数据提交;
                 if($insertSession && $insertMember){
                     $backData = array(
                         "errorCode" =>10000,
@@ -159,7 +159,7 @@ class AccountController extends Controller {
     }
 
     /**
-     *  更新用户资料
+     *  新增&更新用户资料
      *
     */
     public function updateUserinfo(){
@@ -192,6 +192,47 @@ class AccountController extends Controller {
             }
             $this->ajaxReturn($backData);
         }
+    }
+
+    /**
+     * 获取手机验证码 
+     */
+    public function mpcode($phone="15015964846"){
+        // $AliSmsApi = new \Vendor\AliSmsApi\SignatureHelper();
+        $params = array ();
+        $accessKeyId = "LTAIlEi62XZWlKNw";
+        $accessKeySecret = "jVV5XJhHeBW5EwShcfvfCjToXlfQ08";
+        $params["PhoneNumbers"] = $phone;
+        $params["SignName"] = "短信签名";
+        $params["TemplateCode"] = "SMS_126735015";
+        $params['TemplateParam'] = Array (
+            "code" => "4596"
+            // "product" => "阿里通信"
+        );
+
+            // *** 需用户填写部分结束, 以下代码若无必要无需更改 ***
+    if(!empty($params["TemplateParam"]) && is_array($params["TemplateParam"])) {
+        $params["TemplateParam"] = json_encode($params["TemplateParam"], JSON_UNESCAPED_UNICODE);
+    }
+        var_dump($params);
+        return;
+    // 初始化SignatureHelper实例用于设置参数，签名以及发送请求
+    $helper = new \Vendor\AliSmsApi\SignatureHelper();
+
+    // 此处可能会抛出异常，注意catch
+    $content = $helper->request(
+        $accessKeyId,
+        $accessKeySecret,
+        "dysmsapi.aliyuncs.com",
+        array_merge($params, array(
+            "RegionId" => "cn-hangzhou",
+            "Action" => "SendSms",
+            "Version" => "2017-05-25",
+        ))
+    );
+
+    return $content;
+
     }
 
 
