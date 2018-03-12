@@ -107,7 +107,8 @@ class WxpayController {
     }
 
     public function test(){
-        echo  '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+        // echo  '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+        echo "ss";
     }
 
 }

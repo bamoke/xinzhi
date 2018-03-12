@@ -159,7 +159,7 @@ class AccountController extends Controller {
     }
 
     /**
-     *  新增&更新用户资料
+     *  新增&更新用户头像和昵称
      *
     */
     public function updateUserinfo(){
@@ -167,8 +167,14 @@ class AccountController extends Controller {
             $memberId = $this->getMemberId();
             $model = M("MemberInfo");
             $data = array(
-                "nickname"  =>$_POST['nickname'],
-                "avatar"  =>$_POST['avatar']
+                "nickname"      =>I("post.nickname",''),
+                "avatar"        =>I("post.avatar",''),
+                "realname"      =>I("post.realname"),
+                "province"      =>I("post.province"),
+                "city"          =>I("post.city"),
+                "area"          =>I("post.area"),
+                "birthday"      =>I("post.birthday"),
+                "edu"           =>I("post.edu")
             );
             $userInfo = $model->where(array('member_id'=>$memberId))->find();
             if($userInfo){
@@ -197,44 +203,164 @@ class AccountController extends Controller {
     /**
      * 获取手机验证码 
      */
-    public function mpcode($phone="15015964846"){
-        // $AliSmsApi = new \Vendor\AliSmsApi\SignatureHelper();
+    public function mpcode($phone){
+        //1.1 检测手机号码
+        if($this->check_phone($phone)){
+            $backData = array(
+                "errorCode"     =>10001,
+                "errorMsg"      =>"手机号码已经存在"
+            );
+            $this->ajaxReturn($backData);
+        }
+
+
+        //1.2 检测时效，发送间隔必须在60秒
+        $codeMode = M("VerifyCode");
+        $prevTime = $codeMode->field("id,create_time")->where("phone=$phone")->fetchSql(false)->find();
+        $curTime = time();
+        if($prevTime && $curTime - $prevTime['create_time'] < 60){
+            $backData = array(
+                "errorCode"     =>10002,
+                "errorMsg"      =>"发送过于频繁"
+            );
+            $this->ajaxReturn($backData);
+        }
+
+        //1.3 创建验证码
+        $code = mt_rand(100000,999999);
+        
+        //1.4 发送验证码
         $params = array ();
-        $accessKeyId = "LTAIlEi62XZWlKNw";
-        $accessKeySecret = "jVV5XJhHeBW5EwShcfvfCjToXlfQ08";
+        $accessKeyId = "LTAIctKwqQCrAOxA";
+        $accessKeySecret = "2od2OCeEiFHCnCJy9e1y8D0Ubh0EQt";
         $params["PhoneNumbers"] = $phone;
-        $params["SignName"] = "短信签名";
-        $params["TemplateCode"] = "SMS_126735015";
+        $params["SignName"] = "会计职业精英汇";
+        $params["TemplateCode"] = "SMS_126940077";
         $params['TemplateParam'] = Array (
-            "code" => "4596"
+            "code" => $code
             // "product" => "阿里通信"
         );
 
             // *** 需用户填写部分结束, 以下代码若无必要无需更改 ***
-    if(!empty($params["TemplateParam"]) && is_array($params["TemplateParam"])) {
-        $params["TemplateParam"] = json_encode($params["TemplateParam"], JSON_UNESCAPED_UNICODE);
+        if(!empty($params["TemplateParam"]) && is_array($params["TemplateParam"])) {
+            $params["TemplateParam"] = json_encode($params["TemplateParam"], JSON_UNESCAPED_UNICODE);
+        }
+        // 初始化SignatureHelper实例用于设置参数，签名以及发送请求
+        $helper = new \Vendor\AliSmsApi\SignatureHelper();
+        try {
+            $content = $helper->request(
+                $accessKeyId,
+                $accessKeySecret,
+                "dysmsapi.aliyuncs.com",
+                array_merge($params, array(
+                    "RegionId" => "cn-hangzhou",
+                    "Action" => "SendSms",
+                    "Version" => "2017-05-25",
+                ))
+            );
+            
+        } catch( \Exception $e) {
+            $backData = array(
+                "errorCode"     =>10004,
+                "errorMsg"      =>$e->getMessage()
+            );
+            $this->ajaxReturn($backData);
+        }
+
+        //1.5 写入code表
+        if($content->Message == "OK"){
+            $codeResult = false;
+            $dataArr = array(
+                "code"          =>$code,
+                "create_time"   =>time()
+            );
+            if($prevTime){
+                $codeResult = $codeMode->where("id=".$prevTime['id'])->data($dataArr)->save();
+            }else{
+                $dataArr['phone'] = $phone;
+                $codeResult = $codeMode->data($dataArr)->add();
+            }
+            if($codeResult){
+                $backData = array(
+                    "errorCode"     =>10000,
+                    "errorMsg"      =>"OK"
+                );
+            }else {
+                $backData = array(
+                    "errorCode"     =>10005,
+                    "errorMsg"      =>"insert error"
+                );
+            }
+            $this->ajaxReturn($backData);
+
+        }else{
+            $backData = array(
+                "errorCode"     =>10004,
+                "errorMsg"      =>$content->Message
+            );
+            $this->ajaxReturn($backData);
+        }
+
     }
-        var_dump($params);
-        return;
-    // 初始化SignatureHelper实例用于设置参数，签名以及发送请求
-    $helper = new \Vendor\AliSmsApi\SignatureHelper();
 
-    // 此处可能会抛出异常，注意catch
-    $content = $helper->request(
-        $accessKeyId,
-        $accessKeySecret,
-        "dysmsapi.aliyuncs.com",
-        array_merge($params, array(
-            "RegionId" => "cn-hangzhou",
-            "Action" => "SendSms",
-            "Version" => "2017-05-25",
-        ))
-    );
-
-    return $content;
-
+    /**
+     * 检测手机号码
+      */
+    
+    public function check_phone($phone){
+        $where = array(
+            "phone" =>$phone
+        );
+        $result = M("Member")->where($where)->fetchSql(false)->find();
+        if($result){
+            return true;
+        }else {
+            return false;
+        }
     }
 
+
+    /** 
+     * 手机号绑定
+     */
+    public function bindphone(){
+        //1.1检测验证码
+        $phone = I("post.phone");
+        $code = I("post.code");
+        $verifyCondition = array(
+            "phone" =>$phone,
+            "code"  =>$code
+        );
+        $vertifyNum = M("VerifyCode")->where($verifyCondition)->count();
+        if(0 == $vertifyNum){
+            $backData = array(
+                "errorCode"     =>10001,
+                "errorMsg"      =>"验证码不正确"
+            );
+            $this->ajaxReturn($backData);
+        }
+
+        //1.2 更新用户表
+        $memberId = $this->getMemberId();
+        $updateData =array(
+            "phone"             =>$phone,
+            "mp_identification" =>1
+        );
+        $updateMember = M("Member")->where("id=".$memberId)->fetchSql(false)->save($updateData);
+        if($updateMember !==false){
+            $backData = array(
+                "errorCode"     =>10000,
+                "errorMsg"      =>"OK"
+            ); 
+        }else {
+            $backData = array(
+                "errorCode"     =>10002,
+                "errorMsg"      =>"UPDATE FAILD"
+            );
+        }
+        $this->ajaxReturn($backData);
+
+    }
 
 
 }
