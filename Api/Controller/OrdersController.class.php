@@ -64,13 +64,12 @@ class OrdersController extends Controller
                 break;
         }
 
-
-
         //创建订单
         $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
         $orderModel = M("Orders");
         $goodsData = array(array(
             "pro_id" => $proid,
+            "pro_type" => $type,
             "pro_name" => $proInfo['title'],
             "pro_price" => $proInfo['price']
         ));
@@ -93,7 +92,8 @@ class OrdersController extends Controller
         //开启事务
         $model = M();
         $model->startTrans();
-        $orderInsert = $orderModel->data($orderData)->add();
+        $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
+
         if ($orderInsert) {
             //生成订单名称
             $orderName = '';
@@ -111,28 +111,31 @@ class OrdersController extends Controller
                     $orderName = '在线预约:';
                     break;
             }
+
             //创建统一下单
-            $payMentXml = $this->tyxd($orderName, $orderNum, $orderData['amount']);
+            $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/index";//支付成功回调地址
+            $payMentXml = $this->tyxd($orderName, $orderNum, $orderData['amount'],$backUrl);
             $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
             if ($payMentObj->return_code == 'SUCCESS') {
 
                 //支付数据签名
-                $WePay = $this->getWePay();
                 $payMentArr = json_decode(json_encode($payMentObj), true);
                 $signArr = array(
                     'appId' => $payMentArr['appid'],
                     'timeStamp' => (string)time(),
-                    "nonceStr" => $WePay->createRandom(16),
+                    "nonceStr" => createRandom(16),
                     "package" => 'prepay_id=' . $payMentArr['prepay_id'],
                     "signType" => "MD5"
                 );
+
                 $resInfo = $signArr;
-                $resInfo['sign'] = $WePay->sign($signArr);
+                $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
                 $backData = array(
                     "errorCode" => 10000,
                     "errorMsg" => "success",
                     'info' => $resInfo
                 );
+
                 $model->commit();
             } else {
                 $model->rollback();
@@ -153,28 +156,63 @@ class OrdersController extends Controller
     }
 
 
+    /** 
+     * buy present
+     */
+    public function buypresent(){
+
+        //1.1检测用户注册以及认证状态
+        $account = A("Account");
+        $memberId = $account->getMemberId();
+        if (!$memberId) {
+            $backData = array(
+                "errorCode" => 110001,
+                "errorMsg" => "请重新登录"
+            );
+            return $this->ajaxReturn($backData);
+        }
+        //1.2获取
+        $proId = I("post.proid");
+        $proType = I("post.protype");
+        $proModelName = $proType ==1 ? "Columnist" : "Course";
+        $proInfo = M($proModelName)->field("title,price")->where("id=$proId")->find(); 
+    }
+
+    
 
     /**统一下单*/
-    public function tyxd($order_name, $order_num, $amount)
+    public function tyxd($order_name, $order_num, $amount,$backUrl)
     {
-        $WePay = $this->getWePay();
+        // $WePay = $this->getWePay();
+
+        //实例化WePay对象
+        $account = A("Account");
+        $appId = APP_ID;
+        $mch_id = MERCHANT_NUMBER;
+        $mch_key = MERCHANT_SECRET;
+        $openid = $account->getopenid();
+        $WePay = new \Org\Util\WePay($appId, $mch_id, $mch_key, $backUrl, $openid);
+
         $amount = $amount * 100;//将订单金额单位转化为分
 //        $amount = ceil($amount) == $amount ? $amount : $amount * 100;//将订单金额单位转化为分
         $arr = array("order_name" => $order_name, "order_num" => $order_num, "amount" => $amount);
         return $WePay->prepay($arr);
     }
 
-    protected function getWePay()
+/*     protected function getWePay($backUrl)
     {
         $account = A("Account");
         $appId = APP_ID;
         $mch_id = MERCHANT_NUMBER;
         $mch_key = MERCHANT_SECRET;
-        $url = 'http://www.xinzhinetwork.com/api.php/Wxpay/index';
+        // $url = 'http://www.xinzhinetwork.com/api.php/Wxpay/index';
         $openid = $account->getopenid();
-        $a = new \Org\Util\WePay($appId, $mch_id, $mch_key, $url, $openid);
+        $a = new \Org\Util\WePay($appId, $mch_id, $mch_key, $backUrl, $openid);
         return $a;
-    }
+    } */
+
+
+
 
     /***
      * orders operation
