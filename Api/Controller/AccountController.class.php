@@ -120,6 +120,19 @@ class AccountController extends Controller {
         }
         return (int)$memberId;
     }
+
+    /**
+     * 获取用户账号余额
+    */
+    public function fetchBalance(){
+        $memberId = $this->getMemberId();
+        $memberInfo = M("Member")->field("balance")->where(array("id"=>$memberId))->find();
+        if($memberInfo){
+            $balance = $memberInfo['balance'];
+        }
+        return $balance;
+    }
+
     /**
      * 通过openid检测用户状态
      * @param   $openid    string

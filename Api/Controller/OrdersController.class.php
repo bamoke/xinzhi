@@ -81,7 +81,7 @@ class OrdersController extends Controller
             "order_num" => $orderNum,
             "member_id" => $memberId,
             "pro_id" => $proid,
-            "pro_type" => $type,
+            "order_type" => $type,
             "amount" => $proInfo['price'],
             "goods" => serialize($goodsData)
         );
@@ -162,8 +162,8 @@ class OrdersController extends Controller
     public function buypresent(){
 
         //1.1检测用户注册以及认证状态
-        $account = A("Account");
-        $memberId = $account->getMemberId();
+        $Account = A("Account");
+        $memberId = $Account->getMemberId();
         if (!$memberId) {
             $backData = array(
                 "errorCode" => 110001,
@@ -173,14 +173,87 @@ class OrdersController extends Controller
         }
         //1.2获取
         $proId = I("post.proid");
+        $orderType = I("post.type");
         $proType = I("post.protype");
         $proModelName = $proType ==1 ? "Columnist" : "Course";
         $proInfo = M($proModelName)->field("title,price")->where("id=$proId")->find(); 
+
+        $orderName = "购买赠送礼品包";
+        $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
+        $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/present/";//支付成功回调地址
+
+        //1.3 获取账户余额,如果金额足够，直接完成购买
+        $balance = $Account->fetchBalance();
+        $orderAmount = $proInfo['price'] - $balance;
+        if($balance >= $proInfo['price']){
+            //1.3.1
+            $model = M();
+            $model->startTrans();
+            //member
+            $updateData = array(
+                "balance"   =>$balance - $proInfo['price']
+            );
+            $updateBalance = M("Member")->where("id=$memberId")->data($updateData)->save();
+            //present
+            $insertData = array(
+                "member_id"     =>$memberId,
+                "pro_type"      =>$proType,
+                "pro_id"        =>$proId,
+                "secret"        =>md5($orderNum)
+            );
+            $presentInsert = M("Present")->add($insertData);
+            //order
+            $goodsData = array(array(
+                "pro_id" => $proid,
+                "pro_type" => $proType,
+                "pro_name" => "礼品赠送包【".$proInfo['title']."】",
+                "pro_price" => $proInfo['price']
+            ));
+            $orderData = array(
+                "order_num" => $orderNum,
+                "member_id" => $memberId,
+                "order_type"  => 5,
+                "amount"    => $proInfo['price'],
+                "goods"     => serialize($goodsData),
+                "status"    =>2,
+                "pay_way"   =>"余额",
+                "pay_time"  =>date("YmdHis",time())
+            );
+            $orderInsert = M("Orders")->data($orderData)->add();
+            if($updateBalance && $presentInsert && $orderInsert){
+                $model->commit();
+                $backData = array(
+                    "errorCode" => 10000,
+                    "errorMsg" => "购买成功",
+                    "key"       => $insertData['secret']
+                );
+            }else {
+                $model->rollback();
+                $backData = array(
+                    "errorCode" => 10001,
+                    "errorMsg" => "系统繁忙，请稍后再试"
+                );
+            }
+            $this->ajaxReturn($backData);
+        }else {
+            //1.3.2 创建统一下单
+            $payMentXml = $this->tyxd($orderName, $orderNum, $orderAmount,$backUrl);
+            $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
+        }
+        
+
+
     }
 
     
 
-    /**统一下单*/
+    /**
+     * 统一下单
+     * @param   string  order name
+     * @param   string  order number
+     * @param   number  price
+     * @param   string  pay result callback url
+     * */
     public function tyxd($order_name, $order_num, $amount,$backUrl)
     {
         // $WePay = $this->getWePay();

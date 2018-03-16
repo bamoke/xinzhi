@@ -29,7 +29,7 @@ function wxParse($str){
         return substr($str, 0, $length);
     }
 
-        /** 
+    /** 
      * 微信支付数据签名
      */
     function wxSign($param,$mch_key)
