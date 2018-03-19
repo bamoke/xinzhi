@@ -8,11 +8,15 @@ class GiftController extends Controller {
      * 
      */
     public function index($key){
-        $giftInfo = M("Present")->field("id,value,pro_type")->where("secret = '$key'")->find();
+        $giftInfo = M("Present")->field("id,pro_type,content")->where("secret = '$key'")->find();
         $backData = array(
             "errorCode" =>10000,
             "errorMsg"  =>"success",
-            "info"     =>$giftInfo
+            "info"     =>array(
+                "id"        =>$giftInfo['id'],
+                "proType"   =>$giftInfo["pro_type"],
+                "content"   =>unserialize($giftInfo["content"])
+            )
         );
         $this->ajaxReturn($backData);
     }
@@ -59,21 +63,40 @@ class GiftController extends Controller {
         }
 
         //1.4 领取
+        $model = M();
+        $model->startTrans();
+
+        //1.4.1 update present
         $updateData = array(
             "status"    =>1,
-            "sccept_id" =>$memberId
+            "accept_id" =>$memberId
         );
-        $result = M("Present")->data($updateData)->where("id=$id")->save();
-        if(!$result){
-            $backData = array(
-                "errorCode" => 10004,
-                "errorMsg" => "操作错误请稍后再试"
-            );
-        }else {
+        $updateResult = M("Present")->data($updateData)->where("id=$id")->save();
+
+        //1.4.2 insert my goods
+        $myGoodsData = array(
+            "type" => $giftInfo['pro_type'],
+            "pro_id" => $giftInfo['pro_id'],
+            "member_id" => $memberId
+        );
+        if ($giftInfo['pro_type'] == 1) {
+            $myGoodsData['start_time'] = time();
+            $myGoodsData['end_time'] = strtotime("+1 year");
+        }
+        $myGoodsInsert = M("MyGoods")->data($myGoodsData)->add();
+
+        if($updateResult && $myGoodsInsert){
             $backData = array(
                 "errorCode" => 10000,
                 "errorMsg" => "OK"
             );
+            $model->commit();
+        }else {
+            $backData = array(
+                "errorCode" => 10004,
+                "errorMsg" => "系统繁忙,请稍后再试"
+            );
+            $model->rollback();
         }
         return $this->ajaxReturn($backData);
     }

@@ -176,7 +176,7 @@ class OrdersController extends Controller
         $orderType = I("post.type");
         $proType = I("post.protype");
         $proModelName = $proType ==1 ? "Columnist" : "Course";
-        $proInfo = M($proModelName)->field("title,price")->where("id=$proId")->find(); 
+        $proInfo = M($proModelName)->field("title,price,thumb")->where("id=$proId")->find(); 
 
         $orderName = "购买赠送礼品包";
         $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
@@ -185,6 +185,13 @@ class OrdersController extends Controller
         //1.3 获取账户余额,如果金额足够，直接完成购买
         $balance = $Account->fetchBalance();
         $orderAmount = $proInfo['price'] - $balance;
+        $orderGoodsData = array(array(
+            "pro_id" => $proId,
+            "pro_type" => $proType,
+            "pro_name" => $proInfo['title'],
+            "pro_price" => $proInfo['price'],
+            "pro_thumb" => $proInfo['thumb']
+        ));
         if($balance >= $proInfo['price']){
             //1.3.1
             $model = M();
@@ -201,20 +208,32 @@ class OrdersController extends Controller
                 "pro_id"        =>$proId,
                 "secret"        =>md5($orderNum)
             );
+            $url ="";
+/*             switch($proType){
+                case 1:
+                $url .= "column/column-detail/index";
+                break;
+                case 2:
+                $url .= "course/detail/index";
+                break;
+            } */
+            $giftContent = array(
+                "proid"     =>$proId,
+                "title"     =>$proInfo['title'],
+                "value"     =>$proInfo['price'],
+                "thumb"     =>$proInfo['thumb'],
+                "url"       =>$url
+            );
+            $insertData['content'] = serialize($giftContent);
             $presentInsert = M("Present")->add($insertData);
             //order
-            $goodsData = array(array(
-                "pro_id" => $proid,
-                "pro_type" => $proType,
-                "pro_name" => "礼品赠送包【".$proInfo['title']."】",
-                "pro_price" => $proInfo['price']
-            ));
+
             $orderData = array(
                 "order_num" => $orderNum,
                 "member_id" => $memberId,
-                "order_type"  => 5,
+                "order_type"  => $orderType,
                 "amount"    => $proInfo['price'],
-                "goods"     => serialize($goodsData),
+                "goods"     => serialize($orderGoodsData),
                 "status"    =>2,
                 "pay_way"   =>"余额",
                 "pay_time"  =>date("YmdHis",time())
@@ -236,9 +255,65 @@ class OrdersController extends Controller
             }
             $this->ajaxReturn($backData);
         }else {
-            //1.3.2 创建统一下单
+            $model = M();
+            $model->startTrans();
+            //1.3.2 创建订单
+            $orderData = array(
+                "order_num" => $orderNum,
+                "member_id" => $memberId,
+                "order_type"  => $orderType,
+                "amount"    => $orderAmount,
+                "goods"     => serialize($orderGoodsData),
+                "status"    =>1
+            );
+            $orderInsert = M("Orders")->data($orderData)->add();
+
+
+            //1.3.4 创建统一下单
             $payMentXml = $this->tyxd($orderName, $orderNum, $orderAmount,$backUrl);
             $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
+            if ($payMentObj->return_code != 'SUCCESS'){
+                $backData = array(
+                    "errorCode" => 13004,
+                    "errorMsg" => "统一下单创建错误",
+                    "info" => $payMentObj
+                );
+                $model->rollback();
+                $this->ajaxReturn($backData);
+            }
+
+            if(!$orderInsert){
+                $backData = array(
+                    "errorCode" => 13003,
+                    "errorMsg" => "数据写入错误"
+                );
+                $model->rollback();
+                $this->ajaxReturn($backData);
+            }
+
+            
+            //支付数据签名
+            $payMentArr = json_decode(json_encode($payMentObj), true);
+            $signArr = array(
+                'appId' => $payMentArr['appid'],
+                'timeStamp' => (string)time(),
+                "nonceStr" => createRandom(16),
+                "package" => 'prepay_id=' . $payMentArr['prepay_id'],
+                "signType" => "MD5"
+            );
+
+            $resInfo = $signArr;
+            $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
+            $backData = array(
+                "errorCode" => 10000,
+                "errorMsg" => "success",
+                'payMent' => $resInfo,
+                "key"   =>md5($orderNum)
+            );
+
+            $model->commit();
+
+            $this->ajaxReturn($backData);
         }
         
 
