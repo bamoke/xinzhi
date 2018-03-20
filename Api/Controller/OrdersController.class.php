@@ -64,9 +64,12 @@ class OrdersController extends Controller
                 break;
         }
 
+        //获取余额
+        $balance = $Account->fetchBalance();
+        $orderAmount = $proInfo['price'] - $balance;
+
         //创建订单
         $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
-        $orderModel = M("Orders");
         $goodsData = array(array(
             "pro_id" => $proid,
             "pro_type" => $type,
@@ -82,7 +85,7 @@ class OrdersController extends Controller
             "member_id" => $memberId,
             "pro_id" => $proid,
             "order_type" => $type,
-            "amount" => $proInfo['price'],
+            "amount" => $orderAmount,
             "goods" => serialize($goodsData)
         );
         if ($type == 1 || $type == 2) {//课程和专栏有讲师ID
@@ -92,10 +95,51 @@ class OrdersController extends Controller
         //开启事务
         $model = M();
         $model->startTrans();
-        $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
+        $orderModel = M("Orders");
+        //如果余额足够直接完成
+        if($orderAmount <= 0 ){
+            //insert order
+            $orderData['status'] =2;
+            $orderData['pay_way'] ="余额";
+            $orderData['pay_time'] =date("YmdHis",time());
+            $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
 
-        if ($orderInsert) {
-            //生成订单名称
+            //update balance
+            $updateData = array(
+                "balance"   =>$balance - $proInfo['price']
+            );
+            $updateBalance = M("Member")->where("id=$memberId")->data($updateData)->save();
+
+            //insert my goods
+            $myGoodsData = array(
+                "type" => $type,
+                "pro_id" => $proid,
+                "member_id" => $memberId,
+            );
+            if ($type == 1) {
+                $myGoodsData['start_time'] = time();
+                $myGoodsData['end_time'] = strtotime("+1 year");
+            }
+            $myGoodsInsert = M("MyGoods")->data($myGoodsData)->add();
+
+            //update buy number
+            $updateBuyNum = A("Wxpay")->updateBuyNum($type,$proid);
+            if($orderInsert && $updateBalance && $myGoodsInsert && $updateBuyNum){
+                $backData=array(
+                    "errorCode" => 10000,
+                    "errorMsg" => "购买成功" 
+                );
+                $model->commit();
+            }else {
+                $backData=array(
+                    "errorCode" => 10001,
+                    "errorMsg" => "系统繁忙,请稍后再试" 
+                );
+                $model->rollback();
+            }
+            $this-ajaxReturn($backData);
+        }else {
+            //预支付
             $orderName = '';
             switch ($type) {
                 case 1:
@@ -111,6 +155,7 @@ class OrdersController extends Controller
                     $orderName = '在线预约:';
                     break;
             }
+            $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
 
             //创建统一下单
             $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/index";//支付成功回调地址
@@ -145,14 +190,10 @@ class OrdersController extends Controller
                     "info" => $payMentObj
                 );
             }
-
-        } else {
-            $backData = array(
-                "errorCode" => 10001,
-                "errorMsg" => "订单提交错误"
-            );
+            $this->ajaxReturn($backData);
         }
-        $this->ajaxReturn($backData);
+        
+
     }
 
 

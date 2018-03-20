@@ -89,7 +89,7 @@ class HomeController extends Controller {
     }
 
     /**
-     * 我的课程
+     * 我的预约课程
      **/
     function mybooking($page=1){
         $account = A("Account");
@@ -274,6 +274,32 @@ class HomeController extends Controller {
             );
         }
 
+        $this->ajaxReturn($backData);
+    }
+
+    /**
+     * my present
+     */
+    public function present($page=1){
+        $memberId = A("Account")->getMemberId();
+        $presentList = M("Present")->where("member_id=".$memberId)->page($page,20)->order("id desc")->select();
+        if($presentList !== false){
+            if(count($presentList)>0){
+                foreach($presentList as $key=>$val){
+                    $presentList[$key]['content'] = unserialize($val['content']);
+                }
+            }
+            $backData = array(
+                "errorCode" =>10000,
+                "errorMsg"  =>"success",
+                "list" =>$presentList,
+            );
+        }else {
+            $backData = array(
+                "errorCode" =>10001,
+                "errorMsg"  =>"系统繁忙，请稍后再试"
+            ); 
+        }
         $this->ajaxReturn($backData);
     }
 

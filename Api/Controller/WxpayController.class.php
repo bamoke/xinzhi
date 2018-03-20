@@ -29,13 +29,23 @@ class WxpayController {
                 $where = array(
                     "order_num" => $orderNum
                 );
-                $orderInfo = $orderModel->field('member_id,order_type,pro_id,status')->where($where)->find();
+                $orderInfo = $orderModel->field('member_id,order_type,pro_id,amount,status,goods')->where($where)->find();
+
 
                 //如果订单未处理
                 if ($orderInfo['status'] == 1) {
                     //1.开启事务
                     $mode = M();
                     $mode->startTrans();
+
+                    //判断是否扣除了余额
+                    $orderGoods = unserialize($orderInfo['goods'])[0];
+                    $amountDiff = (float)$orderGoods['pro_price'] - $orderInfo['amount'];
+                    $balanceUpdate =  true;
+                    if($amountDiff > 0){
+                        $balanceSql = "update __MEMBER__ set balance=balance-".$amountDiff." where id=".$memberId;
+                        $balanceUpdate = M()->execute($balanceSql);
+                    }
 
                     //2.加入我的商品
                     $myGoodsData = array(
@@ -181,7 +191,7 @@ class WxpayController {
      * @param   number  product id
      * @return  boolean 
      */
-    protected function updateBuyNum($type,$id){
+    public function updateBuyNum($type,$id){
         $updateModelName = '';
         $updateProSql ='update ';
         $setData = "";
