@@ -11,9 +11,10 @@ class OrdersController extends Controller
      */
     public function create($type,$proid)
     {
-        $account = A("Account");
+        $Account = A("Account");
         //检测用户注册以及认证状态
-        $memberId = $account->getMemberId();
+        // $memberId = 1;
+        $memberId = $Account->getMemberId();
         if (!$memberId) {
             $backData = array(
                 "errorCode" => 110001,
@@ -35,7 +36,7 @@ class OrdersController extends Controller
             );
             return $this->ajaxReturn($backData);
         }
-
+        
         //获取产品信息；type 1:专栏;2:课程;3:测试;4:在线预约
         $proModelName = '';
         $proField = 'id,title,teacher_id,thumb,price';
@@ -63,7 +64,7 @@ class OrdersController extends Controller
                 );
                 break;
         }
-
+        
         //获取余额
         $balance = $Account->fetchBalance();
         $orderAmount = $proInfo['price'] - $balance;
@@ -88,6 +89,7 @@ class OrdersController extends Controller
             "amount" => $orderAmount,
             "goods" => serialize($goodsData)
         );
+        
         if ($type == 1 || $type == 2) {//课程和专栏有讲师ID
             $orderData['teacher_id'] = $proInfo['teacher_id'];
         }
@@ -99,6 +101,7 @@ class OrdersController extends Controller
         //如果余额足够直接完成
         if($orderAmount <= 0 ){
             //insert order
+            $orderData['amount'] =0;
             $orderData['status'] =2;
             $orderData['pay_way'] ="余额";
             $orderData['pay_time'] =date("YmdHis",time());
@@ -137,7 +140,7 @@ class OrdersController extends Controller
                 );
                 $model->rollback();
             }
-            $this-ajaxReturn($backData);
+            $this->ajaxReturn($backData);
         }else {
             //预支付
             $orderName = '';
@@ -159,7 +162,7 @@ class OrdersController extends Controller
 
             //创建统一下单
             $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/index";//支付成功回调地址
-            $payMentXml = $this->tyxd($orderName, $orderNum, $orderData['amount'],$backUrl);
+            $payMentXml = $this->tyxd($orderName, $orderNum, $orderAmount,$backUrl);
             $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
             if ($payMentObj->return_code == 'SUCCESS') {
 

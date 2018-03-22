@@ -30,7 +30,7 @@ class WxpayController {
                     "order_num" => $orderNum
                 );
                 $orderInfo = $orderModel->field('member_id,order_type,pro_id,amount,status,goods')->where($where)->find();
-
+                $memberId = $orderInfo['member_id'];
 
                 //如果订单未处理
                 if ($orderInfo['status'] == 1) {
