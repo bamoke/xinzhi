@@ -2,22 +2,41 @@
 namespace Api\Controller;
 use Think\Controller;
 class SurveyController extends Controller {
+    protected $memberId;
+    protected function _initialize(){
+        $this->memberId = A("Account")->getMemberId();
+    }
 
     /** 
      * 调查问卷
      * View
      * 
      */
-    public function index($key){
-        $giftInfo = M("Present")->field("id,pro_type,content")->where("secret = '$key'")->find();
+    public function index($id){
+        $logWhere = array(
+            "survey_id" =>$id,
+            "member_id" =>$this->memberId
+        );
+        $logCount = M("SurveyLog")->where($logWhere)->count();
+        if($logCount > 0){
+            $backData = array(
+                "errorCode" =>10002,
+                "errorMsg"  =>"已经参与过此项调查，感谢您的支持！"
+            );
+            $this->ajaxReturn($backData);
+        }
+
+        $surveyInfo = M("Survey")->where("id = $id")->find();
+
+        $questionListSql = "select * ,(select * from __SURVEY_ANSWER__ ) as answer from __SURVEY_QUESTION__ where s_id=$id";
+        // $questionList = M()->fetchSql(true)->query($questionListSql);
+        var_dump($questionListSql);
+        return;
         $backData = array(
             "errorCode" =>10000,
             "errorMsg"  =>"success",
-            "info"     =>array(
-                "id"        =>$giftInfo['id'],
-                "proType"   =>$giftInfo["pro_type"],
-                "content"   =>unserialize($giftInfo["content"])
-            )
+            "surveyInfo"     =>$surveyInfo,
+            "questionList"  =>$questionList
         );
         $this->ajaxReturn($backData);
     }
@@ -26,10 +45,29 @@ class SurveyController extends Controller {
      * Action
      */
     public function dopoll(){
-        var_dump($_POST);
+        $model = M();
+        $model->startTrans();
+        $memberId = $this->memberId;
+        $id = I("post.id");
+        $answerId = I("post.answerid");
+        
+        $updateSurveySql = "update __SURVEY__ set partake_num = partake_num +1 where id=$id";
+        $updateSurvey = M()->execute($updateSurveySql);
+
+        $updateAnswerSql = "update __SURVEY_ANSWER__ set poll_num = poll_num + 1 where id in ($answerId)";
+        $updateAnswer = M()->execute($updateAnswerSql);
+        
+
+        $insertLogData = array(
+            "member_id"     =>$memberId,
+            "survey_id"     =>$id
+        );
+        $insertLog = M("SurveyLog")->data($insertLogData)->add();
 
 
-/*         if($updateResult && $myGoodsInsert){
+
+
+        if($updateSurvey && $updateAnswer && $insertLog){
             $backData = array(
                 "errorCode" => 10000,
                 "errorMsg" => "OK"
@@ -42,7 +80,7 @@ class SurveyController extends Controller {
             );
             $model->rollback();
         }
-        return $this->ajaxReturn($backData); */
+        return $this->ajaxReturn($backData);
     }
 
 }
