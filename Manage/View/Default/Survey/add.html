@@ -1,0 +1,57 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="alert alert-info">
+        </div>
+        <form name="add-form" class="form form-horizontal" action="{:U('a_add')}">
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>问卷标题:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="title" class="form-control" value="" placeholder="建议6-20个字符">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <a href="javascript:" class="add-btn js-add-btn"></a>
+                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                        <input type="file" name="thumb" class="js-file-input" style="display: none;" >
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×160px</div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-2">是否展示:</label>
+                <div class="col-xs-5">
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="1">是
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="status" value="0" checked>否
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>问卷说明:</label>
+                <div class="col-xs-5">
+                    <textarea name="description" class="form-control" placeholder="200字符以内"></textarea>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">赠送红包</label>
+                <div class="col-xs-2">
+                    <input type="text" name="give_balance" value="" placeholder="请填入整数或小数" class="form-control js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>

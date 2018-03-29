@@ -134,6 +134,32 @@ class AccountController extends Controller {
     }
 
     /**
+     * 添加账户余额
+     */
+    public function addBalance($val,$memberId=null){
+        if($memberId === null){
+            $memberId = $this->getMemberId();
+        }
+        $val = (float)$val;
+        $updateSql = "update __MEMBER__ set balance = balance + $val where id=$memberId";
+        $update = M()->execute($updateSql);
+        return $update;
+    }
+
+    /**
+     * subBalance
+     */
+    public function subBalance($val,$memberId = null){
+        if($memberId === null){
+            $memberId = $this->getMemberId();
+        }
+        $val = (float)$val;
+        $updateSql = "update __MEMBER__ set balance = balance - $val where id=$memberId";
+        $update = M()->execute($updateSql);
+        return $update;
+    }
+
+    /**
      * 通过openid检测用户状态
      * @param   $openid    string
      * @return  array

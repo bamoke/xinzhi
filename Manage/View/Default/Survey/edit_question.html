@@ -1,0 +1,49 @@
+<assign name="questionInfo" value="$output['questionInfo']"/>
+<assign name="answer" value="$output['answerList']"/>
+<div class="panel">
+    <div class="panel-heading">
+        <div class="u-page-title">{$pageName}</div>
+    </div>
+    <div class="panel-body">
+        <form name="add-question-form" id="questionEditForm" class="form form-horizontal" action="{:U('a_update_question')}">
+                <input type="hidden" name="sid" value="{$Think.get.sid}">
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="symbol">*</span>问题:</label>
+                    <div class="col-xs-5">
+                        <textarea name="question" rows="2" class="form-control" placeholder="请填写问题">{$questionInfo['question']}</textarea>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">试题类型:</label>
+                    <div class="col-xs-5">
+                        <label class="radio-inline"><input type="radio" name="type" value="1" <eq name="questionInfo['type']" value="1">checked</eq> >单选</label>
+                        <label class="radio-inline"><input type="radio" name="type" value="2" <eq name="questionInfo['type']" value="2">checked</eq> >多选</label>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="symbol">*</span>选项:</label>
+                    <div class="col-xs-5">
+                        <div class="m-answer" id="js-answer-box">
+                            <volist name="answer" id="v">
+                                <div class="answer-item" data-answerid="{$v['id']}">
+                                    <input class="form-control"  value="{$v['name']}" >
+                                    <div class="right-box"><a class="del-btn" data-answerid="{$v['id']}"><i class="icon icon-remove"></i>删除</a></div>
+                                </div>
+                            </volist>
+
+                            <div class="bot"><a href="javascript:" id="js-add-answer" class="add-btn">添加选项</a></div>
+                        </div>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+
+            <div class="form-group">
+                <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
+                <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>
+
+            </div>
+        </form>
+    </div>
+</div>
