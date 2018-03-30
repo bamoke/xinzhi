@@ -6,11 +6,18 @@
     </div>
     <div class="panel-body">
         <form name="add-question-form" id="questionEditForm" class="form form-horizontal" action="{:U('a_update_question')}">
-                <input type="hidden" name="sid" value="{$Think.get.sid}">
+                <input type="hidden" name="qid" value="{$Think.get.id}">
                 <div class="form-group">
-                    <label class="control-label col-xs-2"><span class="symbol">*</span>问题:</label>
+                    <label class="control-label col-xs-2"><span class="symbol">*</span>提问:</label>
                     <div class="col-xs-5">
-                        <textarea name="question" rows="2" class="form-control" placeholder="请填写问题">{$questionInfo['question']}</textarea>
+                        <textarea name="question" rows="2" class="form-control" placeholder="请填写提问内容">{$questionInfo['question']}</textarea>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2"><span class="symbol">*</span>排序:</label>
+                    <div class="col-xs-1">
+                        <input class="form-control" type="number" min="0" value="{$questionInfo['sort']}" name="sort" />
                     </div>
                     <div class="col-xs-3 tips"></div>
                 </div>
@@ -27,9 +34,9 @@
                     <div class="col-xs-5">
                         <div class="m-answer" id="js-answer-box">
                             <volist name="answer" id="v">
-                                <div class="answer-item" data-answerid="{$v['id']}">
-                                    <input class="form-control"  value="{$v['name']}" >
-                                    <div class="right-box"><a class="del-btn" data-answerid="{$v['id']}"><i class="icon icon-remove"></i>删除</a></div>
+                                <div class="answer-item" data-update="{:U('a_update_answer')}" data-del="{:U('a_del_answer')}" data-answerid="{$v['id']}">
+                                    <input class="form-control js-answer-val"  value="{$v['name']}" data-val="{$v['name']}" >
+                                    <div class="right-box"><a class="del-btn" data-actype="1"><i class="icon icon-remove"></i>删除</a></div>
                                 </div>
                             </volist>
 

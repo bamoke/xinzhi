@@ -56,7 +56,7 @@ require(['../Common/init'],function(){
                         if(typeof res.jump !== 'undefined'){
                             window.location.href= res.jump;
                         }else {
-                            //window.location.reload()
+                            window.location.reload()
                         }
 
                     }
@@ -148,17 +148,13 @@ require(['../Common/init'],function(){
         $editQuestionForm.validate({
             //debug:true,
             rules:{
-                "question_cate":'required',
-                "ask":"required",
+                "question":'required',
                 "answer[]":"required",
-                "correct[]":"required"
 
             },
             messages:{
-                "question_cate":'请选择类别',
-                "ask":"请填写问题",
-                "answer[]":"请填写答案内容",
-                "correct[]":"请选择正确答案"
+                "question":"请填写提问内容",
+                "answer[]":"请填写提问选项"
 
             },
             submitHandler:function(form){
@@ -193,17 +189,59 @@ require(['../Common/init'],function(){
 
         // delete answer
         $("#js-answer-box").on('click','.del-btn',function(){
-            console.log($(this).data("answerid"));
-            return;
-            if(typeof $(this).data("answerid") !=='undefined'){
-                //===================================
-                //==============
-                /////////////
+            var delApiUrl;
+            var curAnswerId;
+            var $item = $(this).closest(".answer-item");
+            if(typeof $(this).data("actype") !=='undefined'){
+                if(confirm("确定要删除此选项？")){
+                    delApiUrl = $item.data("del");
+                    curAnswerId = $item.data("answerid");
+                    $(this).hide();
+                    $.get(delApiUrl,{id:curAnswerId},res=>{
+                        console.log(typeof res)
+                        if(typeof res === 'object'){
+                            if(res.status){
+                                $item.slideUp('fast',function(){
+                                    $(this).remove();
+                                })
+                            }else {
+                                alert(res.msg)
+                            }
+                        }else {
+                            alert("服务器错误");
+                            return;
+                        }
+                    })
+                }
+                return;
             }
-            $(this).closest(".answer-item").slideUp('fast',function(){
+            $item.slideUp('fast',function(){
                 $(this).remove();
             })
         });
+
+        // update answer
+        (function(){
+            $(".js-answer-val").blur(function(){
+                var oldVal = $(this).data("val");
+                var curVal = $(this).val();
+                var $item = $(this).closest(".answer-item")
+                var apiUrl = $item.data("update");
+                var answerId = $item.data("answerid")
+                if(curVal == ''){
+                    alert("选项内容不能为空");
+                    return;
+                }
+                if(curVal !== oldVal){
+                    console.log("s");
+                    $.get(apiUrl,{id:answerId,name:curVal},res=>{
+                        if(res.status){
+                            $(this).data("val",curVal)
+                        }
+                    })
+                }
+            })
+        })();
 
         //delete question
         $(".js-del-question").click(function(){

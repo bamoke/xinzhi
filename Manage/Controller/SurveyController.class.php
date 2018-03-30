@@ -210,7 +210,7 @@ class SurveyController extends AuthController
             "script"=>CONTROLLER_NAME."/main"
         );
         $this->assign("output",$outData);
-        $this->assign('pageName',"修改问卷内容");
+        $this->assign('pageName',"修改提问内容");
         $this->display();
     }
 
@@ -255,7 +255,103 @@ class SurveyController extends AuthController
         }
     }
 
+    /**
+     * Action update question
+     */
+    public function a_update_question(){
+        if(IS_POST){
+            $questionId = I("post.qid");
+            $surveyId = I("post.sid");
+            $model = M();
+            $model->startTrans();
+            $questionData = array(
+                "type"      =>I("post.type"),
+                "question"  =>I("post.question"),
+                "sort"      =>I("post.sort")
+            );
+            $questionUpdate = M("SurveyQuestion")->where("id=$questionId")->data($questionData)->save();
 
+            $backData =array();
+            //判断是否有新插入选项
+            if(isset($_POST['answer'])){
+                $answerData = array();
+                foreach($_POST['answer'] as $v){
+                    $answerData[] = array(
+                        "q_id"      =>$questionId,
+                        "name"      =>$v
+                    );
+                }
+                $answerInsert = M("SurveyAnswer")->addAll($answerData);
+                if($questionUpdate!==false && $answerInsert){
+                    $backData['status'] = 1;
+                    $backData['msg'] = "操作成功";
+                    // $backData['jump'] = U('question',array("sid"=>I("post.sid")));
+                    $model->commit();
+                }else {
+                    $backData['status'] = 0;
+                    $backData['msg'] = "操作失败";
+                    $model->rollback();
+                }
+            }else {
+                if($questionUpdate !== false){
+                    $backData['status'] = 1;
+                    $backData['msg'] = "操作成功";
+                    $model->commit();
+                }else {
+                    $backData['status'] = 0;
+                    $backData['msg'] = "操作失败";
+                    $model->rollback();
+                }
+            }
+            $this->ajaxReturn($backData);
+        }
+    }
+
+    /**
+     * Action answer oparetion
+     * Action delete answer one log
+     */
+    public function a_del_answer($id){
+        $deleteResult = M("SurveyAnswer")->where("id=$id")->delete();
+        if($deleteResult){
+            $backData = array(
+                "status"    =>1,
+                "msg"       =>"已删除"
+            );
+        }else {
+            $backData = array(
+                "status"    =>0,
+                "msg"       =>"删除失败"
+            );
+        }
+
+        $this->ajaxReturn($backData);
+    }
+
+    /**
+     * Action update answer
+     */
+    public function a_update_answer(){
+
+        
+        $id = I("get.id");
+        $updateData = array(
+            "name"  =>I("get.name")
+        );
+        $update = M("SurveyAnswer")->where("id=$id")->data($updateData)->save();
+        if($update !==false){
+            $backData = array(
+                "status"    =>1,
+                "msg"       =>"已删除"
+            );
+        }else {
+            $backData = array(
+                "status"    =>0,
+                "msg"       =>"服务器错误"
+            );
+        }
+        $this->ajaxReturn($backData);
+    }
 
 
     /**
