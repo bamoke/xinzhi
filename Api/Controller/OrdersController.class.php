@@ -37,22 +37,26 @@ class OrdersController extends Controller
             return $this->ajaxReturn($backData);
         }
         
-        //获取产品信息；type 1:专栏;2:课程;3:测试;4:在线预约
+        //根据类别设置数据内容；type 1:专栏;2:课程;3:测试;4:在线预约
         $proModelName = '';
         $proField = 'id,title,teacher_id,thumb,price';
+        $orderName = '';
         switch ($type) {
             case 1:
                 $proModelName = 'Columnist';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
+                $orderName = '开通专栏:';
                 break;
             case 2:
                 $proModelName = 'Course';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
+                $orderName = '购买课程:';
                 break;
             case 3 :
                 $proModelName = 'TestsList';
                 $proField = 'id,title,price';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
+                $orderName = '购买测试题:';
                 break;
             case 4:
                 $phaseInfo = M("BookingPhase")->field('booking_id,title')->where(array('id' => $proid))->find();
@@ -62,8 +66,10 @@ class OrdersController extends Controller
                     "thumb" =>$bookingInfo['thumb'],
                     "price" =>$bookingInfo['price']
                 );
+                $orderName = '在线预约:';
                 break;
         }
+
         
         //获取余额
         $balance = $Account->fetchBalance();
@@ -111,7 +117,8 @@ class OrdersController extends Controller
             $updateData = array(
                 "balance"   =>$balance - $proInfo['price']
             );
-            $updateBalance = M("Member")->where("id=$memberId")->data($updateData)->save();
+            // $updateBalance = M("Member")->where("id=$memberId")->data($updateData)->save();
+            $updateBalance = $Account->subBalance($proInfo['price'],$orderName."扣除",$memberId);
 
             //insert my goods
             $myGoodsData = array(
@@ -143,21 +150,6 @@ class OrdersController extends Controller
             $this->ajaxReturn($backData);
         }else {
             //预支付
-            $orderName = '';
-            switch ($type) {
-                case 1:
-                    $orderName = '开通专栏:';
-                    break;
-                case 2:
-                    $orderName = '购买课程:';
-                    break;
-                case 3 :
-                    $orderName = '购买测试题:';
-                    break;
-                case 4 :
-                    $orderName = '在线预约:';
-                    break;
-            }
             $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
 
             //创建统一下单
@@ -244,7 +236,8 @@ class OrdersController extends Controller
             $updateData = array(
                 "balance"   =>$balance - $proInfo['price']
             );
-            $updateBalance = M("Member")->where("id=$memberId")->data($updateData)->save();
+            $updateBalance = $Account->subBalance($proInfo['price'],$orderName."扣除",$memberId);
+
             //present
             $insertData = array(
                 "member_id"     =>$memberId,
@@ -408,6 +401,7 @@ class OrdersController extends Controller
 
     /***
      * orders operation
+     * 前端已隐藏订单操作下面方法可以作废2018-03-31
      */
 
     public function cancel_order($id)

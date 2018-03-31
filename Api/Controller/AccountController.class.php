@@ -124,8 +124,10 @@ class AccountController extends Controller {
     /**
      * 获取用户账号余额
     */
-    public function fetchBalance(){
-        $memberId = $this->getMemberId();
+    public function fetchBalance($memberId=null){
+        if(!$memberId) {
+            $memberId = $this->getMemberId();
+        }
         $memberInfo = M("Member")->field("balance")->where(array("id"=>$memberId))->find();
         if($memberInfo){
             $balance = $memberInfo['balance'];
@@ -136,27 +138,43 @@ class AccountController extends Controller {
     /**
      * 添加账户余额
      */
-    public function addBalance($val,$memberId=null){
+    public function addBalance($val,$reson,$memberId=null){
         if($memberId === null){
             $memberId = $this->getMemberId();
         }
         $val = (float)$val;
         $updateSql = "update __MEMBER__ set balance = balance + $val where id=$memberId";
         $update = M()->execute($updateSql);
-        return $update;
+
+        //插入日志
+        $logData = array(
+            "member_id"     =>$memberId,
+            "amount"        =>$val,
+            "description"   =>$reson
+        );
+        $insertLog = M("BalanceLog")->data($logData)->add();
+        return $update && $insertLog;
     }
 
     /**
      * subBalance
      */
-    public function subBalance($val,$memberId = null){
+    public function subBalance($val,$reson,$memberId = null){
         if($memberId === null){
             $memberId = $this->getMemberId();
         }
         $val = (float)$val;
         $updateSql = "update __MEMBER__ set balance = balance - $val where id=$memberId";
         $update = M()->execute($updateSql);
-        return $update;
+
+        //插入日志
+        $logData = array(
+            "member_id"     =>$memberId,
+            "amount"        => 0 - $val,
+            "description"   =>$reson
+        );
+        $insertLog = M("BalanceLog")->data($logData)->add();
+        return $update && $insertLog;
     }
 
     /**
@@ -197,6 +215,28 @@ class AccountController extends Controller {
         return $backData;
     }
 
+
+    /**
+     * Fetch member info
+     */
+    public function getUserinfo(){
+        $memberId = $this->getMemberId();
+        $info = M("MemberInfo")->where("member_id=$memberId")->find();
+        if($info){
+            $backData = array(
+                "errorCode" =>10000,
+                "errorMsg"  =>"ok",
+                "info"  =>$info
+            );
+        }else {
+            $backData = array(
+                "errorCode" =>10001,
+                "errorMsg"  =>"系统繁忙"
+            );
+        }
+        $this->ajaxReturn($backData);
+    }
+
     /**
      *  新增&更新用户头像和昵称
      *
@@ -205,7 +245,7 @@ class AccountController extends Controller {
         if(IS_POST){
             $memberId = $this->getMemberId();
             $model = M("MemberInfo");
-            $data = array(
+/*             $data = array(
                 "nickname"      =>I("post.nickname",''),
                 "avatar"        =>I("post.avatar",''),
                 "realname"      =>I("post.realname"),
@@ -214,13 +254,14 @@ class AccountController extends Controller {
                 "area"          =>I("post.area"),
                 "birthday"      =>I("post.birthday"),
                 "edu"           =>I("post.edu")
-            );
+            ); */
+            $data = I("post.");
             $userInfo = $model->where(array('member_id'=>$memberId))->find();
             if($userInfo){
                 $result = $model->where(array('id'=>$userInfo['id']))->data($data)->fetchSql(false)->save();
             }else {
                 $data['member_id'] = $memberId;
-                $result = $model->data($data)->add();
+                $result = $model->data($data)->fetchSql(false)->add();
             }
 
             if($result !== false){
@@ -379,23 +420,38 @@ class AccountController extends Controller {
             $this->ajaxReturn($backData);
         }
 
+        $model = M();
+        $model->startTrans();
         //1.2 更新用户表
         $memberId = $this->getMemberId();
+        $addBalanceVal = 10;
         $updateData =array(
             "phone"             =>$phone,
-            "mp_identification" =>1
+            "mp_identification" =>1,
+            "balance"           =>$addBalanceVal
         );
         $updateMember = M("Member")->where("id=".$memberId)->fetchSql(false)->save($updateData);
-        if($updateMember !==false){
+
+        //1.3 插入余额记录
+        $logData = array(
+            "member_id"     =>$memberId,
+            "amount"        =>$addBalanceVal,
+            "description"   =>"手机绑定奖励"
+        );
+        $logInsert = M("BalanceLog")->data($logData)->add();
+
+        if($updateMember && $logInsert){
             $backData = array(
                 "errorCode"     =>10000,
                 "errorMsg"      =>"OK"
             ); 
+            $model->commit();
         }else {
             $backData = array(
-                "errorCode"     =>10002,
-                "errorMsg"      =>"UPDATE FAILD"
+                "errorCode"     =>10001,
+                "errorMsg"      =>"系统繁忙"
             );
+            $model->rollback();
         }
         $this->ajaxReturn($backData);
 

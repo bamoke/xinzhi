@@ -73,7 +73,8 @@ class SurveyController extends Controller {
         // update balance
         $updateBalance = true;
         if($surveyInfo['give_balance'] > 0){
-            $updateBalance = A("Account")->addBalance($surveyInfo['give_balance'],$memberId);
+            $reson = "问卷调查赠送";
+            $updateBalance = A("Account")->addBalance($surveyInfo['give_balance'],$reson,$memberId);
         }
 
         //update Survey
@@ -96,7 +97,7 @@ class SurveyController extends Controller {
 
 
 
-        if($updateSurvey && $updateAnswer && $insertLog){
+        if($updateBalance && $updateSurvey && $updateAnswer && $insertLog){
             $backData = array(
                 "errorCode"     => 10000,
                 "errorMsg"      => "OK",

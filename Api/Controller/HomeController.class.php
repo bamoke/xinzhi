@@ -3,13 +3,14 @@ namespace Api\Controller;
 use Think\Controller;
 class HomeController extends Controller {
 
+
     public function index(){
         $account = A("Account");
         $memberId = $account->getMemberId();
         $userInfo = M("Member")
         ->alias("M")
         ->field("M.mp_identification,M.balance,MI.nickname,MI.avatar")
-        ->join("__MEMBER_INFO__ as MI on M.id=MI.member_id")
+        ->join("__MEMBER_INFO__ as MI on M.id=MI.member_id","LEFT")
         ->where("M.id = $memberId")
         ->fetchSql(false)
         ->find();
@@ -300,6 +301,23 @@ class HomeController extends Controller {
                 "errorMsg"  =>"系统繁忙，请稍后再试"
             ); 
         }
+        $this->ajaxReturn($backData);
+    }
+
+    /**
+     * 我的余额记录
+     */
+    public function mybalance($page=1){
+        $Account  = A("Account");
+        $memberId = $Account->getMemberId();
+        $list = M("BalanceLog")->where("member_id=$memberId")->page($page,21)->select();
+        $balance = $Account->fetchBalance($memberId);
+        $backData = array(
+            "errorCode" =>10000,
+            "errorMsg"  =>"success",
+            "list"      =>$list,
+            "balance"   =>$balance
+        );
         $this->ajaxReturn($backData);
     }
 

@@ -20,7 +20,7 @@ class WxpayController {
             $logData = array(
                 "order_no"      =>$weData->out_trade_no,
                 "result_code"   =>$weData->result_code,
-                "content"       =>"ok"
+                "content"       =>json_encode($weData)
             );
             $log = M("PayresultLog")->add($logData);
 
@@ -34,17 +34,19 @@ class WxpayController {
 
                 //如果订单未处理
                 if ($orderInfo['status'] == 1) {
-                    //1.开启事务
+                    //0.开启事务
                     $mode = M();
                     $mode->startTrans();
 
-                    //判断是否扣除了余额
+
+                    //1.判断是否扣除了余额
                     $orderGoods = unserialize($orderInfo['goods'])[0];
                     $amountDiff = (float)$orderGoods['pro_price'] - $orderInfo['amount'];
                     $balanceUpdate =  true;
                     if($amountDiff > 0){
-                        $balanceSql = "update __MEMBER__ set balance=balance-".$amountDiff." where id=".$memberId;
-                        $balanceUpdate = M()->execute($balanceSql);
+/*                         $balanceSql = "update __MEMBER__ set balance=balance-".$amountDiff." where id=".$memberId;
+                        $balanceUpdate = M()->execute($balanceSql); */
+                        $balanceUpdate = A("Account")->subBalance($amountDiff,"商品购买扣除",$memberId);
                     }
 
                     //2.加入我的商品
@@ -67,7 +69,7 @@ class WxpayController {
 
 
                     //5. 判断事务
-                    if ($myGoodsInsert && $updateOrder && $updatePro) {
+                    if ($balanceUpdate && $myGoodsInsert && $updateOrder && $updatePro) {
                         $mode->commit();
                         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     } else {
@@ -125,8 +127,7 @@ class WxpayController {
             $model->startTrans();
             $balanceUpdate =  true;
             if($amountDiff > 0){
-                $balanceSql = "update __MEMBER__ set balance=balance-".$amountDiff." where id=".$memberId;
-                $balanceUpdate = M()->execute($balanceSql);
+                $balanceUpdate = A("Account")->subBalance($amountDiff,"购买礼品包扣除",$memberId);
             }
 
             //4. update orders info
