@@ -158,9 +158,7 @@ class ColumnistController extends Controller {
      */
      public function subscriber($proid,$type=0,$memberId=null){
         if($memberId == null){
-            $Account = A("Account");
-//            $memberId = $Account->getMemberId();
-            $memberId = 1;
+           $memberId =  A("Account")->getMemberId();
         }
          $model =M();
          $model->startTrans();

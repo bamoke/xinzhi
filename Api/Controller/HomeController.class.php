@@ -310,7 +310,7 @@ class HomeController extends Controller {
     public function mybalance($page=1){
         $Account  = A("Account");
         $memberId = $Account->getMemberId();
-        $list = M("BalanceLog")->where("member_id=$memberId")->page($page,21)->select();
+        $list = M("BalanceLog")->where("member_id=$memberId")->page($page,21)->order("id desc")->select();
         $balance = $Account->fetchBalance($memberId);
         $backData = array(
             "errorCode" =>10000,
