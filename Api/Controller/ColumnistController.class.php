@@ -119,9 +119,14 @@ class ColumnistController extends Controller {
         $updateResult = M()->execute($updateSql);
 
         //获取文章内容
-        $articleInfo = M("ColumnistArticle")->where(array('id'=>$id))->find();
+        $articleInfo = M("ColumnistArticle")
+        ->alias("CA")
+        ->field("CA.*,C.thumb as c_thumb")
+        ->join("__COLUMNIST__ C on CA.columnist_id = C.id")
+        ->where("CA.id=$id")
+        ->find();
 
-        //获取评论待增加
+        //获取评论
         $commentList = M("Comment")
             ->alias("C")
             ->field("C.*,M.nickname,M.avatar,R.content as reply,R.create_time as reply_time")

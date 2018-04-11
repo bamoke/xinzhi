@@ -114,13 +114,19 @@ class CourseController extends Controller {
         $updateResult = M()->execute($updateSql);
 
         //获取章节内容
-        $result = M("CourseSection")->where(array('id'=>$id))->find();
+        $result = M("CourseSection")
+        ->where(array('id'=>$id))
+        ->find();
+        $nextInfo = M("CourseSection")->field("id,type")->where("id>$id and course_id = ".$result['course_id'])->order("id asc")->find();
+        $prevInfo = M("CourseSection")->field("id,type")->where("id<$id and course_id = ".$result['course_id'])->order("id desc")->find();
         if($result && $updateResult){
             $result['content'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$result['content']);
             $backData = array(
                 "errorCode"     =>10000,
                 "errorMsg"      =>"success",
-                "sectioninfo" =>$result
+                "next"          =>$nextInfo,
+                "prev"          =>$prevInfo,
+                "sectioninfo"   =>$result
             );
         }else{
             $backData = array(

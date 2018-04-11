@@ -180,7 +180,7 @@ class CourseController extends AuthController
 
     /***章节列表***/
     function section($cid){
-        $typeArr = array('',"音频","视频");
+        $typeArr = array('',"图文","音频","视频");
         $sectionModel = M("CourseSection");
         $sectionList = $sectionModel->field('id,title,type,view_num')->where(array('course_id'=>$cid))->select();
         $courseInfo = M("Course")->field('id,title,price,status,buy_num,comment_num,description')->where(array('id'=>$cid))->find();
