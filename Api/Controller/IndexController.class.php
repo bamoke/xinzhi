@@ -8,6 +8,7 @@ class IndexController extends Controller {
         $columnList = M("Columnist")->field("id,title,description,thumb,isfree,price,subscribers,article_num")->where('status=1')->order('recommend desc,id desc')->limit('4')->select();
         $courseList = M("Course")->field("id,title,description,thumb,isfree,price,period,comment_num")->where('status=1')->order('recommend desc,order_no,id desc')->limit('4')->select();
         $survey = M("Survey")->field("id,thumb")->where("status=1")->find();
+        $download = M("Download")->field("id,type,title,description")->where("status=1")->order("sort,id desc")->limit("10")->select();
         //字符截取
         $String = new \Org\Util\String();
         foreach($columnList as $k=>$v){
@@ -22,10 +23,10 @@ class IndexController extends Controller {
         $backData = array(
             "errorCode" =>10000,
             "errorMsg"  =>"success",
-
             "banner"    =>$banner,
             "columnist"     =>$columnList,
             "courseList"    =>$courseList,
+            "download"      =>$download,
             "survey"        =>$survey
         );
         $this->ajaxReturn($backData);

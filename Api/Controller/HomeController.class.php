@@ -9,7 +9,7 @@ class HomeController extends Controller {
         $memberId = $account->getMemberId();
         $userInfo = M("Member")
         ->alias("M")
-        ->field("M.mp_identification,M.balance,MI.nickname,MI.avatar")
+        ->field("M.mp_identification,M.phone,M.balance,MI.nickname,MI.avatar")
         ->join("__MEMBER_INFO__ as MI on M.id=MI.member_id","LEFT")
         ->where("M.id = $memberId")
         ->fetchSql(false)

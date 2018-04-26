@@ -404,7 +404,9 @@ class AccountController extends Controller {
      * 手机号绑定
      */
     public function bindphone(){
+        $memberId = $this->getMemberId();
         //1.1检测验证码
+        $acType = I("post.actype");
         $phone = I("post.phone");
         $code = I("post.code");
         $verifyCondition = array(
@@ -420,31 +422,42 @@ class AccountController extends Controller {
             $this->ajaxReturn($backData);
         }
 
+        // 1.1.1 检测新旧号码是否一样
+        if($acType == 2){
+            $memberInfo = M("Member")->field("phone")->where("id=$memberId")->find();
+            if($phone == $memberInfo['phone']){
+                $backData = array(
+                    "errorCode"     =>10011,
+                    "errorMsg"      =>"新号码与原号码相同"
+                );
+                $this->ajaxReturn($backData); 
+            }
+        }
+
         $model = M();
         $model->startTrans();
+
         //1.2 更新用户表
-        $memberId = $this->getMemberId();
         $addBalanceVal = 10;
         $updateData =array(
             "phone"             =>$phone,
-            "mp_identification" =>1,
-            "balance"           =>$addBalanceVal
+            "mp_identification" =>1
         );
         $updateMember = M("Member")->where("id=".$memberId)->fetchSql(false)->save($updateData);
 
-        //1.3 插入余额记录
-        $logData = array(
-            "member_id"     =>$memberId,
-            "amount"        =>$addBalanceVal,
-            "description"   =>"手机绑定奖励"
-        );
-        $logInsert = M("BalanceLog")->data($logData)->add();
 
-        if($updateMember && $logInsert){
+        //1.3 增加余额
+        $addBalanceResult = true;
+        if($acType == 1){
+            $addBalanceResult = $this->addBalance($addBalanceVal,"手机号绑定奖励",$memberId);
+        }
+        
+        if($updateMember && $addBalanceResult){
             $backData = array(
                 "errorCode"     =>10000,
                 "errorMsg"      =>"OK"
             ); 
+            $backData['errorMsg'] = $acType==1? "恭喜您完成手机号绑定，并获得".(int)$addBalanceVal."元现金奖励" : "已绑定为新手机号码";
             $model->commit();
         }else {
             $backData = array(

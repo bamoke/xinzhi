@@ -109,6 +109,7 @@ class CourseController extends Controller {
      * 课程章节详情
     */
     public function sectiondetail($id){
+        $memberId = A("Account")->getMemberId();
         //更新阅读量
         $updateSql = "update __COURSE_SECTION__ set `view_num`=view_num+1 where id=".$id;
         $updateResult = M()->execute($updateSql);
@@ -119,6 +120,9 @@ class CourseController extends Controller {
         ->find();
         $nextInfo = M("CourseSection")->field("id,type")->where("id>$id and course_id = ".$result['course_id'])->order("id asc")->find();
         $prevInfo = M("CourseSection")->field("id,type")->where("id<$id and course_id = ".$result['course_id'])->order("id desc")->find();
+        $courseInfo = M("Course")->field("thumb")->where("id=".$result['course_id'])->find();
+        //查询是否已经收藏
+        $isCollection = M("Collection")->where("type=2 and member_id=$memberId and pro_id=$id and status=1")->count();
         if($result && $updateResult){
             $result['content'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$result['content']);
             $backData = array(
@@ -126,7 +130,9 @@ class CourseController extends Controller {
                 "errorMsg"      =>"success",
                 "next"          =>$nextInfo,
                 "prev"          =>$prevInfo,
-                "sectioninfo"   =>$result
+                "sectioninfo"   =>$result,
+                "thumb"         =>$courseInfo['thumb'],
+                "isCollection"  =>!!$isCollection
             );
         }else{
             $backData = array(
