@@ -26,13 +26,17 @@
             <div class="form-group">
                 <label class="control-label col-xs-2">资源地址:</label>
                 <div class="col-xs-5">
-                    <input type="text" name="source" id='js-article-source'>
-                    <div id="oss-upload-component">
-                            <div id="ossfile">你的浏览器不支持flash,Silverlight或者HTML5！</div>
-                        <a id="selectfiles" href="javascript:void(0);" class=''>选择文件</a>
-                        <a id="postfiles" href="javascript:void(0);" class=''>开始上传</a>
+                    <input type="hidden" name="source" id='js-article-source'>
+
+                    <!-- plupupload start -->
+                    <!-- <h4>您所选择的文件列表：</h4> -->
+                    <div id="ossfile"></div>
+                    <div id="container">
+                        <a id="selectfiles" href="javascript:void(0);" class='btn btn-default'>选择文件</a>
+                        <a id="postfiles" href="javascript:void(0);" class='btn btn-info'>开始上传</a>
                     </div>
                     <div id="console"></div>
+                    <!-- plupupload end -->
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
