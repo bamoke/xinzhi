@@ -20,7 +20,7 @@ class OssapiController extends AuthController {
     $end = $now + $expire;
     $expiration = gmt_iso8601($end);
 
-    $dir = $type == 1?'audio/':'video/';
+    $dir = $type == 2 ?'audio/':($type== 3 ?'video/':'images/');
 
     //最大文件大小.用户可以自己设置
     $condition = array(0=>'content-length-range', 1=>0, 2=>1048576000);

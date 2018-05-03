@@ -3,7 +3,7 @@
         <div class="u-page-title">添加专栏内容</div>
         <form name="add-article-form" class="form form-horizontal" action="{:U('a_add_article')}">
             <input type="hidden" name="columnist_id" value="{$Think.get.clid}">
-            <input type="hidden" name="type" value="{$Think.get.type}">
+            <input type="hidden" name="type" id="js-section-type" value="{$Think.get.type}">
 
             <div class="form-group">
                 <label class="control-label col-xs-2">文章名称:</label>
@@ -15,9 +15,19 @@
             <assign name="type" value="$Think.get.type"/>
             <if condition="(2 eq $type) or (3 eq $type)">
                 <div class="form-group">
-                    <label class="control-label col-xs-2">资源地址:</label>
+                    <label class="control-label col-xs-2">音/视频名称:</label>
                     <div class="col-xs-5">
-                        <input type="text" name="source" class="form-control" placeholder="填写音、视频完整地址">
+                        <input type="hidden" name="source" id='js-article-source'>
+
+                        <!-- plupupload start -->
+                        <!-- <h4>您所选择的文件列表：</h4> -->
+                        <div id="ossfile"></div>
+                        <div id="container">
+                            <a id="selectfiles" href="javascript:void(0);" class='btn btn-default'>选择文件</a>
+                            <a id="postfiles" href="javascript:void(0);" class='btn btn-info'>开始上传</a>
+                        </div>
+                        <div id="console"></div>
+                        <!-- plupupload end -->
                     </div>
                     <div class="col-xs-3 tips"></div>
                 </div>

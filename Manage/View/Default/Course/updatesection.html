@@ -24,9 +24,19 @@
                 <div class="col-xs-3 tips"></div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-2">资源地址:</label>
+                <label class="control-label col-xs-2">音/视频名称:</label>
                 <div class="col-xs-5">
-                    <textarea rows="3" name="source" class="form-control" placeholder="填写音、视频完整地址">{$info['source']}</textarea>
+                    <input type="hidden" name="source" id='js-article-source' value="{$info['source']}">
+
+                    <!-- plupupload start -->
+                    <!-- <h4>您所选择的文件列表：</h4> -->
+                    <div id="ossfile">{$info['source']}</div>
+                    <div id="container">
+                        <a id="selectfiles" href="javascript:void(0);" class='btn btn-default'>选择文件</a>
+                        <a id="postfiles" href="javascript:void(0);" class='btn btn-info'>开始上传</a>
+                    </div>
+                    <div id="console"></div>
+                    <!-- plupupload end -->
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>

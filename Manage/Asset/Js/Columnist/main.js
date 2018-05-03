@@ -17,7 +17,7 @@ require.config({
     }
 });
 
-require(['../Common/init'],function(){
+require(['../Common/init','../Common/pluploadset'],function(){
     require(["base","ueditor","ZeroClipboard","ueditor_conf","jqvalidate","datetimepicker"],function(bs,UE,ZeroClipboard){
 
         /***编辑器配置***/
@@ -263,6 +263,9 @@ require(['../Common/init'],function(){
                 }
             });
         }
+
+        //Plupload
+        
 
    })
 });
