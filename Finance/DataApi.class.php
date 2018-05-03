@@ -2,11 +2,41 @@
 /**
  * Created by PhpStorm.
  * User: joy.wangxiangyin
- * Date: 2016/8/4
+ * Date: 2018/4/28
  * Time: 17:14
  */
+session_start();
+class Http {
+    function sendHttpRequest($url, $method = "", $data = '', $header = '')
+    {
+        if (function_exists("curl_init")) {
+            $opt = array(
+                CURLOPT_URL => $url,
+                CURLOPT_HEADER => 0,
+                CURLOPT_RETURNTRANSFER => 1,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false
+            );
+            if ($method == 'post' || $method == 2) {
+                $opt[CURLOPT_POST] = 1;
+            }
+            if (($method == "post" || $method == 2) && $data != '') {
+                $opt[CURLOPT_POSTFIELDS] = $data;
+            }
+            if ($header != "") {
+                $opt[CURLOPT_HTTPHEADER] = $header;
+            }
+            $ch = curl_init();
+            curl_setopt_array($ch, $opt);
+            $resp = curl_exec($ch);
+            curl_close($ch);
+            return $resp;
+        }else {
+            var_dump("noexists curl");
+        }
 
-namespace Org\Api;
+    }
+}
 
 /*
  * 云表API接口
@@ -16,12 +46,13 @@ namespace Org\Api;
 
 class DataApi
 {
+    protected $apiUrl;
     protected $appKey = 'fff4bc3f-8e0c-41bd-b00d-f1a6e9c46de4';
-    // protected $appKey = 'd599c57a-469b-4f59-b63c-c3d2f4688169';
     protected $appName = 'd599c57a-469b-4f59-b63c-c3d2f4688169';
     protected  $token;
-    public function __construct($type='in'){
-        if($type != "in") return;
+    protected $serverNum;
+    public function __construct($serverNum){
+        $this->apiUrl = "http://www.iyunbiao.cn/".$serverNum;
         if(isset($_SESSION['apitoken'])){
             $this->token = $_SESSION['apitoken'];
         }else {
@@ -30,6 +61,9 @@ class DataApi
 
     }
 
+    public function test(){
+        var_dump($_SESSION);
+    }
     /*
      * 用户登录
      * 登陆成功保存session apitoken;
@@ -38,15 +72,12 @@ class DataApi
     {
         if(isset($_SESSION['apitoken'])) return $_SESSION['apitoken'];
         $headerParam = $this->createHeader();
-        $url = 'http://www.iyunbiao.cn/18005/openapi/1.0/login';
-        // $url = 'https://s10.iyunbiao.cn/openapi/1.0/login';
-        $data = array("loginJson"=>'{"account":"wechatadmin","password":"we9876***"}');
-        $curHttp = new \Org\Net\Http();
+        $url = $this->apiUrl.'/openapi/1.0/login';
+        $data = array("loginJson"=>'{"account":"wechatadmin","password":"'.strtoupper(MD5("we9876***")).'"}');
+        $curHttp = new Http();
         $resp = json_decode($curHttp->sendHttpRequest($url,"post",$data,$headerParam));
-        var_dump($resp);
-        if($resp->error == 0) {
-            $loginInfo = $resp->info;
-            $_SESSION['apitoken'] = $loginInfo->token;
+        if(isset($resp->token)) {
+            $_SESSION['apitoken'] = $resp->token;
             return $_SESSION['apitoken'];
         }else {
             return "";
@@ -59,20 +90,15 @@ class DataApi
      * */
     public function logout(){
         if(isset($_SESSION['apitoken'])){
-            $url = 'https://s10.iyunbiao.cn/openapi/1.0/logout';
+            $url = $this->apiUrl.'/openapi/1.0/logout';
             $headerParam = $this->createHeader($this->token);
-            $curHttp = new \Org\Net\Http();
+            $curHttp = new Http;
             $resp = json_decode($curHttp->sendHttpRequest($url,"get","",$headerParam));
-            if($resp->error == 0){
-                unset($_SESSION['apitoken']);
-                $backdata=array("error"=>0);
-            }else {
-                $backdata=array("error"=>1,"msg"=>"错误");
-            }
-        }else {
-            $backdata=array("error"=>1,"msg"=>"用户已退出登录");
+
+            //----///
+            var_dump($resp);
+            unset($_SESSION['apitoken']);
         }
-        return json_encode($backdata);
     }
 
     /**
@@ -80,37 +106,9 @@ class DataApi
      * @param str 模板名称
     */
     public function getMainData($tplname,$postData=null){
-        $url = 'https://s10.iyunbiao.cn/openapi/1.0/'.urlencode($tplname);
-        $headerParam = $this->createHeader($this->token);
-        $curHttp = new \Org\Net\Http();
-        if(!is_null($postData)){
-            $resp = json_decode($curHttp->sendHttpRequest($url,"post",$postData,$headerParam));
-        }else {
-            $resp = json_decode($curHttp->sendHttpRequest($url,"get","",$headerParam));
-        }
-        if($resp->error == 0){
-            return $resp->info->results;
-        }
-        return null;
-    }
-
-    public function ssa(){
-        $data=array(
-            "formJson"=>'{"pageInfo": {
-                            "isUseRowIndex": false,
-                            "pageCount": 1,
-                            "pageIndex": 0,
-                            "pageSize": 1,
-                            "rowIndex": 0,
-                            "total":1
-                            },
-                            "filter": [
-                            {"expressionList": [{"operator": "$e","isAnd": true,"value": "珠海方盈电器销售有限公司"}],"filterField": "企业全称"}
-                            ]
-                            }'
-        );
 
     }
+
 
     /*
      * 生成header parameter
@@ -147,3 +145,4 @@ class DataApi
         return $sign;
     }
 }
+

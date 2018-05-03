@@ -4,7 +4,8 @@
 
 <?php 
 include './DataApi.class.php';
-$Api = new DataApi();
+$Api = new DataApi('18005');
+$Api->test();
 // var_dump(ROOT);
 
 ?>
