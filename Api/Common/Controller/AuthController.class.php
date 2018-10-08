@@ -16,8 +16,8 @@ namespace Api\Common\Controller;
 use Think\Controller;
 class AuthController extends Controller
 {
-    protected $uid;
-    protected function _initialize(){
+    public $uid;
+    public function _initialize(){
         $this->_checklogin();
         $this->uid = $this->fetchUid();
     }

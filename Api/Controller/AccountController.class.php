@@ -55,7 +55,7 @@ class AccountController extends Controller {
             );
             return $this->ajaxReturn($backData);  
         }
-        if(($codeInfo['send_time'] + 600) < time()) {
+        if(($codeInfo['create_time'] + 600) < time()) {
             $backData = array(
                 "code" =>13001,
                 "msg"  =>'验证码已过期'
@@ -72,18 +72,18 @@ class AccountController extends Controller {
         
         $model = M();
         $model->startTrans();
-        $insertMemberId = M("Member")->data($memberData)->add();
+        $insertMemberId = M("Member")->data($memberData)->fetchSql(false)->add();
         $sessionData = array(
             "uid"           => $insertMemberId,
             "token"         => $this->createSessionId(),
             "expires_time"  => time() + (3600 * 24 * 7)
         );
-        $insertSession = M("Mysession")->data($sessionData)->add();
+        $insertSession = M("Mysession")->data($sessionData)->fetchSql(false)->add();
         if(!$insertMemberId || !$insertSession) {
             $model->rollback();
             $backData = array(
                 "code" =>13002,
-                "msg"  =>'登录失败'
+                "msg"  =>'注册失败'
             );
             $this->ajaxReturn($backData); 
         }
@@ -109,10 +109,10 @@ class AccountController extends Controller {
         $memberModel = M("Member");
         $phone  = I("post.phone");
         $password = md5(I("post.password")."xz");
-        $condition = array(
+        $memberCondition = array(
             "phone"     => $phone
         );
-        $memberInfo = $memberModel->field("id,error_time,error_limit")->where($condition)->find();
+        $memberInfo = $memberModel->field("id,error_time,error_limit")->where($memberCondition)->find();
         if(!$memberInfo){
             $backData = array(
                 "code" =>13001,
@@ -128,8 +128,8 @@ class AccountController extends Controller {
             return $this->ajaxReturn($backData);            
         }
         $error_time = $memberInfo["error_time"];
-        $condition['password'] = $password;
-        $memberInfo = $memberModel->field("id")->where($condition)->find();
+        $memberCondition['password'] = $password;
+        $memberInfo = $memberModel->field("id")->where($memberCondition)->fetchSql(false)->find();
         if(!$memberInfo){
             // update error info
             $updateData =array(
@@ -151,7 +151,8 @@ class AccountController extends Controller {
         // update session
         $accessToken = $this->createSessionId();
         $sessionData = array(
-            "token" =>$accessToken
+            "token" =>$accessToken,
+            "expires_time"  => time() + (3600 * 24 * 7)
         );
         $updateSession = M("Mysession")->where(array("uid"=>$memberInfo['id']))->data($sessionData)->fetchSql(false)->save();
         // update member
@@ -173,7 +174,7 @@ class AccountController extends Controller {
         $backData = array(
             "code" =>200,
             "msg"  =>'登录成功',
-            "info"  => array(
+            "data"  => array(
                 "token" => $accessToken,
                 "user" => array(
                     "uid"   => $memberInfo["id"],
@@ -187,88 +188,57 @@ class AccountController extends Controller {
     /**
      * login
      */
-    public function wxlogin($code){
-/*        if(empty($_POST['code'])) {
+    public function mplogin(){
+       if(empty($_GET['code'])) {
             $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>'code参数错误',
+                "code" =>10001,
+                "msg"  =>'参数错误',
             );
             return $this->ajaxReturn($backData);
-        }*/
+        }
         // 1. 登录，
-//        $code = I('post.code');
+        $code = I('get.code');
         $Http = new \Org\Net\Http();
         $url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.APP_ID.'&secret='.APP_KEY.'&js_code='.$code.'&grant_type=authorization_code';
         $result = json_decode($Http->sendHttpRequest($url),true);
         if(isset($result['openid'])){
             $openid = $result['openid'];
             $sessionkey = $result['session_key'];
-            $sessionId = $this->createSessionId();
+            $accessToken = $this->createSessionId();
 
             //1.2 session manage
             $sessionModel = M("Mysession");
             $sessionInfo = $sessionModel->where(array("openid"=>$openid))->find();
             if($sessionInfo){
                 $updateData = array(
-                    "sessionid" =>$sessionId,
-                    "sessionkey" =>$sessionkey
+                    "token" =>$accessToken,
+                    "sessionkey" =>$sessionkey,
+                    "expires_time"  => time() + (3600 * 24 * 7)
                 );
                 $updateSession = $sessionModel->where(array("openid"=>$openid))->save($updateData);
                 if($updateSession !== false){
                     $backData = array(
-                        "errorCode" =>10000,
-                        "errorMsg"  =>'ok',
-                        "sessionid" =>$sessionId,
-                        "info"      =>$updateSession
+                        "code" =>200,
+                        "msg"  =>'ok',
+                        "data"=>array(
+                            "accessToken" =>$sessionId
+                        )
                     );
                 }else {
                     $backData = array(
-                        "errorCode" =>10002,
-                        "errorMsg"  =>'登陆态更新失败'
+                        "code" =>13002,
+                        "msg"  =>'登陆态更新失败'
                     );
                 }
 
-            }else {
-                $model = M();
-                $model->startTrans();
-                // 1.3 创建用户
-                $memberModel = M("Member");
-                $insertMemberData = array(
-                    "openid"    =>$openid,
-                    "reg_time"  =>time()
-                );
-                $insertMember = $memberModel->add($insertMemberData);
-
-                //1.4 创建session
-                $insertSessionData = array(
-                    "sessionid" =>$sessionId,
-                    "openid"    =>$openid,
-                    "sessionkey"       =>$sessionkey
-                );
-                $insertSession = $sessionModel->add($insertSessionData);
-
-                // 1.5 数据提交;
-                if($insertSession && $insertMember){
-                    $backData = array(
-                        "errorCode" =>10000,
-                        "errorMsg"  =>'ok',
-                        "sessionid" =>$sessionId,
-                        "info"      =>$insertSessionData
-                    );
-                    $model->commit();
-                }else {
-                    $model->rollback();
-                    $backData = array(
-                        "errorCode" =>10003,
-                        "errorMsg"  =>'登陆态创建失败'
-                    );
-                }
             }
         }else {
             $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>'微信登陆连接失败',
-                "info"      =>$result
+                "code" =>12001,
+                "msg"  =>'微信登陆连接失败',
+                "data" =>array(
+                    "info"  =>$result
+                )
             );
         }
         $this->ajaxReturn($backData);
@@ -287,9 +257,9 @@ class AccountController extends Controller {
     public function getMemberId(){
         $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
         $memberId = null;
-        $memberInfo = M("Member")->field("id")->where(array("token"=>$accessToken))->find();
+        $memberInfo = M("Mysession")->field("uid")->where(array("token"=>$accessToken))->find();
         if($memberInfo){
-            $memberId = intval($memberInfo['id']);
+            $memberId = intval($memberInfo['uid']);
         }
         return $memberId;
     }
@@ -469,7 +439,7 @@ class AccountController extends Controller {
 
 
         //1.2 检测时效，发送间隔必须在60秒
-        $codeMode = M("VerifyCode");
+        $codeMode = M("SmsCode");
         $prevTime = $codeMode->field("id,create_time")->where("phone=$phone")->fetchSql(false)->find();
         $curTime = time();
         if($prevTime && $curTime - $prevTime['create_time'] < 60){

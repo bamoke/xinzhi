@@ -1,6 +1,7 @@
 <?php
 namespace Api\Controller;
 use Think\Controller;
+use Api\Common\Controller\AuthController;
 class ColumnistController extends Controller {
 
     /**
@@ -27,8 +28,9 @@ class ColumnistController extends Controller {
                 "code"     =>200,
                 "msg"      =>"success",
                 "data"  =>array(
-                "cateList"      =>$cateList,
-                "columnistList" =>$colunistList
+                    "hasMore" =>$hasMore,
+                    "cateList"      =>$cateList,
+                    "columnistList" =>$colunistList
                 )
             );
         }else {
@@ -53,6 +55,7 @@ class ColumnistController extends Controller {
             $this->ajaxReturn($backData); 
         }
         $id=I("get.id");
+        // main logic
         $columnistInfo = M("Columnist")
             ->alias("C")
             ->field("C.*,(select count(*) from x_columnist_article where columnist_id = $id and status = 1) as article_num")
@@ -80,7 +83,7 @@ class ColumnistController extends Controller {
         // 2. 查看是否已购买
         $backData['data']['hasColumnistStatus'] = 0;//未购买
         if(!empty($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
-            $memberId = $Account->getMemberId();
+            $memberId = A('Account')->getMemberId();
             if(!is_null($memberId)){
                 $where = array(
                     'member_id' =>$memberId,
@@ -119,8 +122,8 @@ class ColumnistController extends Controller {
             );
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
+                "code"     =>13001,
+                "msg"      =>"数据读取错误"
             );
         }
         $this->ajaxReturn($backData);
@@ -129,10 +132,47 @@ class ColumnistController extends Controller {
     /**
      * 文章详情
     */
-    public function articledetail($id){
+    public function articledetail(){
+        if(empty($_GET['cid']) || empty($_GET['id'])){
+            $backData = array(
+                "code"  => 10002,
+                "msg"   => "参数错误"
+            );
+            $this->ajaxReturn($backData);
+        }
+        $id = I("get.id");
+        $columnId = I("get.cid");
+
+        // 检测专栏类别是否免费，如非免费专栏，检测是否已购买
+        $columnIsfree = intval(M("Columnist")->where("id=$columnId")->getField("isfree"));
+        if($columnIsfree === 0) {
+            $MemberAuth = new AuthController();
+            $memberId = $MemberAuth->uid;
+            $where = array(
+                'member_id' =>intval($memberId),
+                "type"      =>1,
+                "pro_id"    =>$columnId
+            );
+            $myColumnist = M("MyGoods")->where($where)->fetchSql(false)->find();
+            if(!$myColumnist) {
+                $backData = array(
+                    "code"  => 13001,
+                    "msg"   => "收费专栏请订阅后阅读"
+                );
+                $this->ajaxReturn($backData);
+            }
+            if($myColumnist['end_time'] <= time()){
+                $backData = array(
+                    "code"  => 13002,
+                    "msg"   => "订阅已到期"
+                );
+                $this->ajaxReturn($backData);
+            }
+
+        }
+
         //更新阅读量
-        $updateSql = "update __COLUMNIST_ARTICLE__ set `view_num`=view_num+1 where id=".$id;
-        $updateResult = M()->execute($updateSql);
+        $updateResult = M("Columnist_article")->where("id=$id")->setInc("view_num",1);
 
         //获取文章内容
         $articleInfo = M("ColumnistArticle")
@@ -156,15 +196,17 @@ class ColumnistController extends Controller {
         if($updateResult && $articleInfo){
             $articleInfo['content'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$articleInfo['content']);;
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
-                "articleInfo" =>$articleInfo,
-                "commentList" =>$commentList
+                "code"     =>200,
+                "msg"      =>"success",
+                "data"=>array(
+                    "articleInfo" =>$articleInfo,
+                    "commentList" =>$commentList
+                )
             );
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
+                "code"     =>13003,
+                "msg"      =>"数据读取错误"
             );
         }
         $this->ajaxReturn($backData);
