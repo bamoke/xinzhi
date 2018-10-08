@@ -21,13 +21,15 @@ class IndexController extends Controller {
         }
 
         $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-            "banner"    =>$banner,
-            "columnist"     =>$columnList,
-            "courseList"    =>$courseList,
-            "download"      =>$download,
-            "survey"        =>$survey
+            "code" =>200,
+            "msg"  =>"success",
+            "data" =>array(
+                "banner"        =>$banner,
+                "columnist"     =>$columnList,
+                "courseList"    =>$courseList,
+                "download"      =>$download,
+                "survey"        =>$survey
+                )
         );
         $this->ajaxReturn($backData);
     }

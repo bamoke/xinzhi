@@ -1,9 +1,9 @@
 <?php
 namespace Api\Controller;
 
-use Think\Controller;
+use Api\Common\Controller\AuthController;
 
-class OrdersController extends Controller
+class OrdersController extends AuthController
 {
 
     /***
@@ -11,17 +11,7 @@ class OrdersController extends Controller
      */
     public function create($type,$proid)
     {
-        $Account = A("Account");
-        //检测用户注册以及认证状态
-        // $memberId = 1;
-        $memberId = $Account->getMemberId();
-        if (!$memberId) {
-            $backData = array(
-                "errorCode" => 110001,
-                "errorMsg" => "请重新登录"
-            );
-            return $this->ajaxReturn($backData);
-        }
+        $memberId = $this->uid;
 
         //检测是否已经购买过
         $haveCondition = array(
@@ -37,7 +27,7 @@ class OrdersController extends Controller
             return $this->ajaxReturn($backData);
         }
         
-        //根据类别设置数据内容；type 1:专栏;2:课程;3:测试;4:在线预约
+        //根据类别设置数据内容；type 1:专栏;2:课程;3:测试;4:在线预约,5:赠送,
         $proModelName = '';
         $proField = 'id,title,teacher_id,thumb,price';
         $orderName = '';
@@ -197,16 +187,7 @@ class OrdersController extends Controller
      */
     public function buypresent(){
 
-        //1.1检测用户注册以及认证状态
-        $Account = A("Account");
-        $memberId = $Account->getMemberId();
-        if (!$memberId) {
-            $backData = array(
-                "errorCode" => 110001,
-                "errorMsg" => "请重新登录"
-            );
-            return $this->ajaxReturn($backData);
-        }
+        $memberId = $this->uid;
         //1.2获取
         $proId = I("post.proid");
         $orderType = I("post.type");

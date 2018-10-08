@@ -4,17 +4,190 @@ use Think\Controller;
 class AccountController extends Controller {
 
     protected function createSessionId(){
-        $session_id=`head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 64`;
+        $session_id=`head -n 80 /dev/urandom | tr -dc A-Za-z0-9 | head -c 32`;
         return $session_id;
     }
 
-    function test (){
-        echo "s";
+    public function regist(){
+        if(!IS_POST){
+            $backData = array(
+                "code" =>10001,
+                "msg"  =>'请求错误',
+            );
+            return $this->ajaxReturn($backData);       
+        }
+        // 1.1 check data
+        $phone = I("post.phone");
+        $password = I("post.password"); 
+        $password2 = I("post.password2"); 
+        $code = I("post.code");
+        // 1.1.1 validate phone 
+        if(empty($_POST['phone'])){
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'手机号不能为空'
+            );
+            return $this->ajaxReturn($backData);   
+        }
+        // 1.1.2 validate password
+        if($password !== $password2){
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'两次密码不一致'
+            );
+            return $this->ajaxReturn($backData);   
+        }
+        // 1.1.3 validate phone
+        $isExist = M("Member")->where(array("phone"=>$phone))->find();
+        if($isExist) {
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'用户已存在'
+            );
+            return $this->ajaxReturn($backData);              
+        }
+        // 1.1.4 validate code
+        $codeInfo = M("SmsCode")->where(array("phone"=>$phone))->find();
+        if(!$codeInfo || $code != $codeInfo['code']) {
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'验证码不正确'
+            );
+            return $this->ajaxReturn($backData);  
+        }
+        if(($codeInfo['send_time'] + 600) < time()) {
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'验证码已过期'
+            );
+            return $this->ajaxReturn($backData);            
+        }
+
+        // 1.2 insert
+        $memberData = array(
+            "phone"         => $phone,
+            "password"      => md5($password."xz"),
+            "reg_time"      => time()
+        );
+        
+        $model = M();
+        $model->startTrans();
+        $insertMemberId = M("Member")->data($memberData)->add();
+        $sessionData = array(
+            "uid"           => $insertMemberId,
+            "token"         => $this->createSessionId(),
+            "expires_time"  => time() + (3600 * 24 * 7)
+        );
+        $insertSession = M("Mysession")->data($sessionData)->add();
+        if(!$insertMemberId || !$insertSession) {
+            $model->rollback();
+            $backData = array(
+                "code" =>13002,
+                "msg"  =>'登录失败'
+            );
+            $this->ajaxReturn($backData); 
+        }
+
+        $model->commit();
+        $backData = array(
+            "code" =>200,
+            "msg"  =>'注册成功'
+        );
+        $this->ajaxReturn($backData); 
+    }
+    /**
+     *  Account login
+     */
+    public function login(){
+        if(!IS_POST){
+            $backData = array(
+                "code" =>10001,
+                "msg"  =>'请求错误',
+            );
+            return $this->ajaxReturn($backData);       
+        }
+        $memberModel = M("Member");
+        $phone  = I("post.phone");
+        $password = md5(I("post.password")."xz");
+        $condition = array(
+            "phone"     => $phone
+        );
+        $memberInfo = $memberModel->field("id,error_time,error_limit")->where($condition)->find();
+        if(!$memberInfo){
+            $backData = array(
+                "code" =>13001,
+                "msg"  =>'账号不存在',
+            );
+            return $this->ajaxReturn($backData);      
+        }
+        if($memberInfo['error_time'] >= 5 && $memberInfo['error_limit'] > time()) {
+            $backData = array(
+                "code" =>13002,
+                "msg"  =>"密码错误超过五次，账号锁定2小时",
+            );
+            return $this->ajaxReturn($backData);            
+        }
+        $error_time = $memberInfo["error_time"];
+        $condition['password'] = $password;
+        $memberInfo = $memberModel->field("id")->where($condition)->find();
+        if(!$memberInfo){
+            // update error info
+            $updateData =array(
+                "error_time"    => $error_time + 1
+            );
+            if($error_time >= 4){
+                $updateData['error_limit'] = time() + 7200;
+            }
+            $updateError = $memberModel->where(array("phone"=>$phone))->save($updateData);
+            $backData = array(
+                "code" =>13003,
+                "msg"  =>'密码错误',
+            );
+            return $this->ajaxReturn($backData);      
+        }
+
+        $model = M();
+        $model->startTrans();
+        // update session
+        $accessToken = $this->createSessionId();
+        $sessionData = array(
+            "token" =>$accessToken
+        );
+        $updateSession = M("Mysession")->where(array("uid"=>$memberInfo['id']))->data($sessionData)->fetchSql(false)->save();
+        // update member
+        $memberData = array(
+            "error_time"    => 0,
+            "error_limit"   => null
+
+        );
+        $updateMemer = M("Member")->where(array("id"=>$memberInfo['id']))->data($memberData)->fetchSql(false)->save();
+        if(!$updateSession || $updateMemer === false) {
+            $model->rollback();
+            $backData = array(
+                "code" =>13004,
+                "msg"  =>'数据更新错误',
+            );
+            return $this->ajaxReturn($backData);              
+        }
+        $model->commit();
+        $backData = array(
+            "code" =>200,
+            "msg"  =>'登录成功',
+            "info"  => array(
+                "token" => $accessToken,
+                "user" => array(
+                    "uid"   => $memberInfo["id"],
+                    "phone" => $phone
+                )
+            )
+        );
+        return $this->ajaxReturn($backData);    
+        
     }
     /**
      * login
      */
-    public function login($code){
+    public function wxlogin($code){
 /*        if(empty($_POST['code'])) {
             $backData = array(
                 "errorCode" =>10001,
@@ -103,8 +276,8 @@ class AccountController extends Controller {
 
 
     public function getopenid(){
-        $sessionid = $_SERVER["HTTP_SESSION_ID"];
-        $sessionInfo = M("Mysession")->field('openid')->where(array("sessionid"=>$sessionid))->find();
+        $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+        $sessionInfo = M("Mysession")->field('openid')->where(array("token"=>$accessToken))->find();
         return $sessionInfo ? $sessionInfo['openid'] : null;
     }
 
@@ -112,13 +285,13 @@ class AccountController extends Controller {
      * 获取用户账号信息
     */
     public function getMemberId(){
-        $openid = $this->getopenid();
+        $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
         $memberId = null;
-        $memberInfo = M("Member")->field("id")->where(array("openid"=>$openid))->find();
+        $memberInfo = M("Member")->field("id")->where(array("token"=>$accessToken))->find();
         if($memberInfo){
-            $memberId = $memberInfo['id'];
+            $memberId = intval($memberInfo['id']);
         }
-        return (int)$memberId;
+        return $memberId;
     }
 
     /**
@@ -137,6 +310,7 @@ class AccountController extends Controller {
 
     /**
      * 添加账户余额
+     * 应用在事务逻辑中
      */
     public function addBalance($val,$reson,$memberId=null){
         if($memberId === null){
@@ -287,8 +461,8 @@ class AccountController extends Controller {
         //1.1 检测手机号码
         if($this->check_phone($phone)){
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"手机号码已经存在"
+                "code"     =>13001,
+                "msg"      =>"手机号码已经存在"
             );
             $this->ajaxReturn($backData);
         }
@@ -300,8 +474,8 @@ class AccountController extends Controller {
         $curTime = time();
         if($prevTime && $curTime - $prevTime['create_time'] < 60){
             $backData = array(
-                "errorCode"     =>10002,
-                "errorMsg"      =>"发送过于频繁"
+                "code"     =>13002,
+                "msg"      =>"发送过于频繁"
             );
             $this->ajaxReturn($backData);
         }
@@ -341,8 +515,8 @@ class AccountController extends Controller {
             
         } catch( \Exception $e) {
             $backData = array(
-                "errorCode"     =>10004,
-                "errorMsg"      =>$e->getMessage()
+                "code"     =>13004,
+                "msg"      =>$e->getMessage()
             );
             $this->ajaxReturn($backData);
         }
@@ -362,21 +536,21 @@ class AccountController extends Controller {
             }
             if($codeResult){
                 $backData = array(
-                    "errorCode"     =>10000,
-                    "errorMsg"      =>"OK"
+                    "code"     =>200,
+                    "msg"      =>"OK"
                 );
             }else {
                 $backData = array(
-                    "errorCode"     =>10005,
-                    "errorMsg"      =>"insert error"
+                    "code"     =>13005,
+                    "msg"      =>"insert error"
                 );
             }
             $this->ajaxReturn($backData);
 
         }else{
             $backData = array(
-                "errorCode"     =>10004,
-                "errorMsg"      =>$content->Message
+                "code"     =>13004,
+                "msg"      =>$content->Message
             );
             $this->ajaxReturn($backData);
         }

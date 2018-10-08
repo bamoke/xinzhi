@@ -24,15 +24,17 @@ class ColumnistController extends Controller {
         }
         if($cateList && $colunistList !==false){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
+                "code"     =>200,
+                "msg"      =>"success",
+                "data"  =>array(
                 "cateList"      =>$cateList,
                 "columnistList" =>$colunistList
+                )
             );
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
+                "code"     =>13001,
+                "msg"      =>"数据读取错误"
             );
         }
         $this->ajaxReturn($backData);
@@ -42,7 +44,15 @@ class ColumnistController extends Controller {
     /**
      * 专栏详情
     */
-    public function detail($id){
+    public function detail(){
+        if(empty($_GET["id"])){
+            $backData = array(
+              "code"  => 10002,
+              "msg"   => "访问参数错误"
+            );  
+            $this->ajaxReturn($backData); 
+        }
+        $id=I("get.id");
         $columnistInfo = M("Columnist")
             ->alias("C")
             ->field("C.*,(select count(*) from x_columnist_article where columnist_id = $id and status = 1) as article_num")
@@ -58,33 +68,37 @@ class ColumnistController extends Controller {
             $teacherInfo['introduce'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$teacherInfo['introduce']);
         }
         $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-            "columnist"     =>$columnistInfo,
-            "articleList"    =>$articleList,
-            "teacherInfo"     =>$teacherInfo
+            "code" =>200,
+            "msg"  =>"success",
+            "data"=>array(
+                "columnist"     =>$columnistInfo,
+                "articleList"    =>$articleList,
+                "teacherInfo"     =>$teacherInfo
+            )
         );
 
         // 2. 查看是否已购买
-        $Account = A("Account");
-        $memberId = $Account->getMemberId();
-        $where = array(
-            'member_id' =>$memberId,
-            "type"      =>1,
-            "pro_id"    =>$id
-        );
-        $myColumnist = M("MyGoods")->where($where)->find();
-        if($myColumnist){
-            if($myColumnist['end_time'] <= time()){
-                $backData['hasColumnistStatus'] = 2;//购买已到期
-            }else {
-                $backData['hasColumnistStatus'] = 1;//已经购买
+        $backData['data']['hasColumnistStatus'] = 0;//未购买
+        if(!empty($_SERVER["HTTP_X_ACCESS_TOKEN"])) {
+            $memberId = $Account->getMemberId();
+            if(!is_null($memberId)){
+                $where = array(
+                    'member_id' =>$memberId,
+                    "type"      =>1,
+                    "pro_id"    =>$id
+                );
+                $myColumnist = M("MyGoods")->where($where)->find();
+                if($myColumnist){
+                    if($myColumnist['end_time'] <= time()){
+                        $backData['data']['hasColumnistStatus'] = 2;//购买已到期
+                    }else {
+                        $backData['data']['hasColumnistStatus'] = 1;//已经购买
+                    }
+        
+                }
             }
 
-        }else {
-            $backData['hasColumnistStatus'] = 0;//未购买
         }
-
         $this->ajaxReturn($backData);
     }
 
@@ -96,10 +110,12 @@ class ColumnistController extends Controller {
         $articleList = M('ColumnistArticle')->field("id,title,type,thumb,Date(create_time) as time,view_num,comment_num")->where(array('columnist_id'=>$cid,'status'=>1))->order('id desc')->page($page,10)->select();
         if($columnistInfo && $articleList !==false){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
-                "columnistInfo"      =>$columnistInfo,
-                "articleList" =>$articleList
+                "code"     =>200,
+                "msg"      =>"success",
+                "data"  =>array(
+                    "columnistInfo"      =>$columnistInfo,
+                    "articleList" =>$articleList
+                )
             );
         }else {
             $backData = array(
