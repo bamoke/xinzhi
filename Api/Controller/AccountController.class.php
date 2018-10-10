@@ -79,7 +79,11 @@ class AccountController extends Controller {
             "expires_time"  => time() + (3600 * 24 * 7)
         );
         $insertSession = M("Mysession")->data($sessionData)->fetchSql(false)->add();
-        if(!$insertMemberId || !$insertSession) {
+        $updateBindData = array(
+            "uid"   =>$insertMemberId
+        );
+        $updateBind = M("AccountBind")->where(array('id'=>I('post.bind_id')))->data($updateBindData)->save();
+        if(!$insertMemberId || !$insertSession || !$updateBind) {
             $model->rollback();
             $backData = array(
                 "code" =>13002,
@@ -186,7 +190,8 @@ class AccountController extends Controller {
         
     }
     /**
-     * login
+     * 微信登陆
+     * 1.检测是否已经注册过（第一次登陆生成新用户）
      */
     public function mplogin(){
        if(empty($_GET['code'])) {
@@ -196,43 +201,12 @@ class AccountController extends Controller {
             );
             return $this->ajaxReturn($backData);
         }
-        // 1. 登录，
+        // 1. 登录获取openid，
         $code = I('get.code');
         $Http = new \Org\Net\Http();
         $url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.APP_ID.'&secret='.APP_KEY.'&js_code='.$code.'&grant_type=authorization_code';
         $result = json_decode($Http->sendHttpRequest($url),true);
-        if(isset($result['openid'])){
-            $openid = $result['openid'];
-            $sessionkey = $result['session_key'];
-            $accessToken = $this->createSessionId();
-
-            //1.2 session manage
-            $sessionModel = M("Mysession");
-            $sessionInfo = $sessionModel->where(array("openid"=>$openid))->find();
-            if($sessionInfo){
-                $updateData = array(
-                    "token" =>$accessToken,
-                    "sessionkey" =>$sessionkey,
-                    "expires_time"  => time() + (3600 * 24 * 7)
-                );
-                $updateSession = $sessionModel->where(array("openid"=>$openid))->save($updateData);
-                if($updateSession !== false){
-                    $backData = array(
-                        "code" =>200,
-                        "msg"  =>'ok',
-                        "data"=>array(
-                            "accessToken" =>$sessionId
-                        )
-                    );
-                }else {
-                    $backData = array(
-                        "code" =>13002,
-                        "msg"  =>'登陆态更新失败'
-                    );
-                }
-
-            }
-        }else {
+        if(!isset($result['openid'])) {
             $backData = array(
                 "code" =>12001,
                 "msg"  =>'微信登陆连接失败',
@@ -240,19 +214,94 @@ class AccountController extends Controller {
                     "info"  =>$result
                 )
             );
+            $this->ajaxReturn($backData);
         }
-        $this->ajaxReturn($backData);
+
+        $openid = $result['openid'];
+        $wxSessionkey = $result['session_key'];
+        $accessToken = $this->createSessionId();
+
+        // 1.2 查询是否已经有注册
+        $memberCondition = array(
+            "openid"    =>$openid
+        );
+        $accountInfo = M("Member")->where($memberCondition)->find();
+        if($accountInfo) {
+            // 更新SESSION Token
+            $updateData = array(
+                "token" =>$accessToken,
+                "expires_time"  => time() + (3600 * 24 * 7)
+            );
+            $updateSession = M("Mysession")->where(array("uid"=>$accountInfo['id']))->save($updateData);
+            if($updateSession !== false){
+                $backData = array(
+                    "code" =>200,
+                    "msg"  =>'ok',
+                    "data"=>array(
+                        "accessToken" =>$accessToken
+                    )
+                );
+            }else {
+                $backData = array(
+                    "code" =>13002,
+                    "msg"  =>'登陆态更新失败'
+                );
+            }
+            $this->ajaxReturn($backData);
+
+        }else {
+            $model = M();
+            $model->startTrans();
+            // 新建用户
+            $memberInsertData = array(
+                "openid"    =>$openid,
+                "reg_time" =>time()
+            );
+            $memberInsertResult = M("Member")->data($memberInsertData)->fetchSql(false)->add();
+
+            $sessionInsertData = array(
+                "uid"           =>$memberInsertResult,
+                "openid"        =>$openid,
+                "token"         =>$accessToken,
+                "expires_time"  =>time() + (3600*24*7)
+            );
+            $sessionInsertResult = M("Mysession")->data($sessionInsertData)->add();
+            
+            // 2.1 新建session
+            if(!$memberInsertResult || !$sessionInsertResult) {
+                $model->rollback();
+                $backData = array(
+                    "code" =>13002,
+                    "msg"  =>'数据创建错误'
+                );   
+            }else {
+                $model->commit();
+                $backData = array(
+                    "code" =>200,
+                    "msg"  =>'success',
+                    "data"  =>array(
+                        "accessToken"   =>$accessToken
+                    )
+                ); 
+            }
+            $this->ajaxReturn($backData);
+        }
+        
     }
 
-
+    /**
+     * 获取用户OPENID
+    */
     public function getopenid(){
         $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
-        $sessionInfo = M("Mysession")->field('openid')->where(array("token"=>$accessToken))->find();
+        $sessionInfo = M("Mysession")
+        ->where(array('token'=>$accessToken))
+        ->find();
         return $sessionInfo ? $sessionInfo['openid'] : null;
     }
 
     /**
-     * 获取用户账号信息
+     * 获取用户ID
     */
     public function getMemberId(){
         $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
@@ -271,7 +320,7 @@ class AccountController extends Controller {
         if(!$memberId) {
             $memberId = $this->getMemberId();
         }
-        $memberInfo = M("Member")->field("balance")->where(array("id"=>$memberId))->find();
+        $memberInfo = M("Member")->field("balance")->where(array("id"=>$memberId))->fetchSql(false)->find();
         if($memberInfo){
             $balance = $memberInfo['balance'];
         }
@@ -334,25 +383,25 @@ class AccountController extends Controller {
         if($memberInfo){
             if(0 == $memberInfo['verify']){
                 $backData = array(
-                    "errorCode" =>10002,
-                    "errorMsg"  =>"用户认证待审中…"
+                    "code" =>13002,
+                    "msg"  =>"用户认证待审中…"
                 );
             }elseif(3 == $memberInfo['verify']){
                 $backData = array(
-                    "errorCode" =>10003,
-                    "errorMsg"  =>"未通过认证不能购买"
+                    "code" =>13003,
+                    "msg"  =>"未通过认证不能购买"
                 );
             }else{
                 $backData = array(
-                    "errorCode" =>10000,
-                    "errorMsg"  =>"ok",
+                    "code" =>200,
+                    "msg"  =>"ok",
                     "memberid"  =>$memberInfo['id']
                 );
             }
         }else {
             $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>"请先注册",
+                "code" =>10001,
+                "msg"  =>"请先注册",
                 "openid"    =>$openid
             );
         }
@@ -368,14 +417,14 @@ class AccountController extends Controller {
         $info = M("MemberInfo")->where("member_id=$memberId")->find();
         if($info){
             $backData = array(
-                "errorCode" =>10000,
-                "errorMsg"  =>"ok",
-                "info"  =>$info
+                "code" =>200,
+                "msg"  =>"ok",
+                "data"  =>$info
             );
         }else {
             $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>"系统繁忙"
+                "code" =>13001,
+                "msg"  =>"系统繁忙"
             );
         }
         $this->ajaxReturn($backData);
@@ -410,14 +459,14 @@ class AccountController extends Controller {
 
             if($result !== false){
                 $backData = array(
-                    "errorCode" =>10000,
-                    "errorMsg"  =>"ok",
+                    "code" =>200,
+                    "msg"  =>"ok",
 
                 );
             }else {
                 $backData = array(
-                    "errorCode" =>10001,
-                    "errorMsg"  =>"更新资料错误",
+                    "code" =>13001,
+                    "msg"  =>"更新资料错误",
                 );
             }
             $this->ajaxReturn($backData);
@@ -546,6 +595,7 @@ class AccountController extends Controller {
 
     /** 
      * 手机号绑定
+     * actype 1绑定手机,2:更换手机
      */
     public function bindphone(){
         $memberId = $this->getMemberId();
@@ -560,8 +610,8 @@ class AccountController extends Controller {
         $vertifyNum = M("VerifyCode")->where($verifyCondition)->count();
         if(0 == $vertifyNum){
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"验证码不正确"
+                "code"     =>13001,
+                "msg"      =>"验证码不正确"
             );
             $this->ajaxReturn($backData);
         }
@@ -571,8 +621,8 @@ class AccountController extends Controller {
             $memberInfo = M("Member")->field("phone")->where("id=$memberId")->find();
             if($phone == $memberInfo['phone']){
                 $backData = array(
-                    "errorCode"     =>10011,
-                    "errorMsg"      =>"新号码与原号码相同"
+                    "code"     =>13011,
+                    "msg"      =>"新号码与原号码相同"
                 );
                 $this->ajaxReturn($backData); 
             }
@@ -593,20 +643,20 @@ class AccountController extends Controller {
         //1.3 增加余额
         $addBalanceResult = true;
         if($acType == 1){
-            $addBalanceResult = $this->addBalance($addBalanceVal,"手机号绑定奖励",$memberId);
+            // $addBalanceResult = $this->addBalance($addBalanceVal,"手机号绑定奖励",$memberId);
         }
         
         if($updateMember && $addBalanceResult){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"OK"
+                "code"     =>200,
+                "msg"      =>"绑定成功"
             ); 
-            $backData['errorMsg'] = $acType==1? "恭喜您完成手机号绑定，并获得".(int)$addBalanceVal."元现金奖励" : "已绑定为新手机号码";
+            // $backData['errorMsg'] = $acType==1? "恭喜您完成手机号绑定，并获得".(int)$addBalanceVal."元现金奖励" : "已绑定为新手机号码";
             $model->commit();
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"系统繁忙"
+                "code"     =>13001,
+                "msg"      =>"系统繁忙"
             );
             $model->rollback();
         }

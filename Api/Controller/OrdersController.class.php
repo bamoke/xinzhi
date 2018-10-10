@@ -21,8 +21,8 @@ class OrdersController extends AuthController
         $isHave = M("MyGoods")->where($haveCondition)->find();
         if($isHave){
             $backData = array(
-                "errorCode" => 110002,
-                "errorMsg" => "无需重复购买"
+                "code" => 130002,
+                "msg" => "无需重复购买"
             );
             return $this->ajaxReturn($backData);
         }
@@ -126,14 +126,14 @@ class OrdersController extends AuthController
             $updateBuyNum = A("Wxpay")->updateBuyNum($type,$proid);
             if($orderInsert && $updateBalance && $myGoodsInsert && $updateBuyNum){
                 $backData=array(
-                    "errorCode" => 10000,
-                    "errorMsg" => "购买成功" 
+                    "code" => 200,
+                    "msg" => "购买成功" 
                 );
                 $model->commit();
             }else {
                 $backData=array(
-                    "errorCode" => 10001,
-                    "errorMsg" => "系统繁忙,请稍后再试" 
+                    "code" => 13001,
+                    "msg" => "系统繁忙,请稍后再试" 
                 );
                 $model->rollback();
             }
@@ -161,17 +161,17 @@ class OrdersController extends AuthController
                 $resInfo = $signArr;
                 $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
                 $backData = array(
-                    "errorCode" => 10000,
-                    "errorMsg" => "success",
-                    'info' => $resInfo
+                    "code" => 200,
+                    "msg" => "success",
+                    'data' => $resInfo
                 );
 
                 $model->commit();
             } else {
                 $model->rollback();
                 $backData = array(
-                    "errorCode" => 10002,
-                    "errorMsg" => "统一下单创建错误",
+                    "code" => 13002,
+                    "msg" => "统一下单创建错误",
                     "info" => $payMentObj
                 );
             }
@@ -188,6 +188,7 @@ class OrdersController extends AuthController
     public function buypresent(){
 
         $memberId = $this->uid;
+        $Account = A('Account');
         //1.2获取
         $proId = I("post.proid");
         $orderType = I("post.type");
@@ -292,8 +293,8 @@ class OrdersController extends AuthController
             $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
             if ($payMentObj->return_code != 'SUCCESS'){
                 $backData = array(
-                    "errorCode" => 13004,
-                    "errorMsg" => "统一下单创建错误",
+                    "code" => 13004,
+                    "masg" => "统一下单创建错误",
                     "info" => $payMentObj
                 );
                 $model->rollback();
@@ -302,8 +303,8 @@ class OrdersController extends AuthController
 
             if(!$orderInsert){
                 $backData = array(
-                    "errorCode" => 13003,
-                    "errorMsg" => "数据写入错误"
+                    "code" => 13003,
+                    "msg" => "数据写入错误"
                 );
                 $model->rollback();
                 $this->ajaxReturn($backData);
@@ -323,10 +324,12 @@ class OrdersController extends AuthController
             $resInfo = $signArr;
             $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
             $backData = array(
-                "errorCode" => 10000,
-                "errorMsg" => "success",
-                'payMent' => $resInfo,
-                "key"   =>md5($orderNum)
+                "code" => 200,
+                "msg" => "success",
+                "data"=>array(
+                    'payMent' => $resInfo,
+                    "key"   =>md5($orderNum)
+                )
             );
 
             $model->commit();
@@ -392,14 +395,14 @@ class OrdersController extends AuthController
         $result = $model->where(array('id' => $id))->delete();
         if ($result === false) {
             $backData = array(
-                "errorCode" => 10001,
-                "errorMsg" => "操作错误"
+                "code" => 13001,
+                "msg" => "操作错误"
             );
         } else {
             $backData = array(
-                "errorCode" => 10000,
-                "errorMsg" => "ok",
-                "info" => array()
+                "code" => 200,
+                "msg" => "ok",
+                "data" => array()
             );
         }
         $this->ajaxReturn($backData);
@@ -415,14 +418,14 @@ class OrdersController extends AuthController
         $result = $model->where(array('id' => $id))->data($updateData)->save();
         if ($result === false) {
             $backData = array(
-                "errorCode" => 10001,
-                "errorMsg" => "操作错误"
+                "code" => 13001,
+                "msg" => "操作错误"
             );
         } else {
             $backData = array(
-                "errorCode" => 10000,
-                "errorMsg" => "ok",
-                "info" => array()
+                "code" => 200,
+                "msg" => "ok",
+                "data" => array()
             );
         }
         $this->ajaxReturn($backData);
@@ -460,8 +463,8 @@ class OrdersController extends AuthController
                 $myGoods = M("MyGoods")->where($myGoodsWhere)->find();
                 if ($myGoods) {
                     $backData = array(
-                        "errorCode" => 10009,
-                        "errorMsg" => '已经购买过不需重复购买'
+                        "code" => 13009,
+                        "msg" => '已经购买过不需重复购买'
                     );
                     $this->ajaxReturn($backData);
                 }
@@ -486,22 +489,22 @@ class OrdersController extends AuthController
                 $resInfo = $signArr;
                 $resInfo['sign'] = $WePay->sign($signArr);
                 $backData = array(
-                    "errorCode" => 10000,
-                    "errorMsg" => "success",
-                    'info' => $resInfo
+                    "code" => 200,
+                    "msg" => "success",
+                    'data' => $resInfo
                 );
             } else {
                 $backData = array(
-                    "errorCode" => 10002,
-                    "errorMsg" => "订单接口错误",
+                    "code" => 12002,
+                    "msg" => "订单接口错误",
                     "info"      =>$payMentObj
                 );
             }
 
         } else {
             $backData = array(
-                "errorCode" => 10001,
-                "errorMsg" => "操作错误"
+                "code" => 13001,
+                "msg" => "操作错误"
             );
         }
         $this->ajaxReturn($backData);

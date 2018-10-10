@@ -10,9 +10,9 @@ class GiftController extends Controller {
     public function index($key){
         $giftInfo = M("Present")->field("id,pro_type,content")->where("secret = '$key'")->find();
         $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-            "info"     =>array(
+            "code" =>200,
+            "msg"  =>"success",
+            "data"     =>array(
                 "id"        =>$giftInfo['id'],
                 "proType"   =>$giftInfo["pro_type"],
                 "content"   =>unserialize($giftInfo["content"])
@@ -30,8 +30,8 @@ class GiftController extends Controller {
         //1.1 礼包是否已经被领取
         if ($giftInfo['status'] == 1) {
             $backData = array(
-                "errorCode" => 10001,
-                "errorMsg" => "对不起，礼包已经被领取了！"
+                "code" => 13001,
+                "msg" => "对不起，礼包已经被领取了！"
             );
             return $this->ajaxReturn($backData);
         }
@@ -41,8 +41,8 @@ class GiftController extends Controller {
         $memberId = $account->getMemberId();
         if (!$memberId) {
             $backData = array(
-                "errorCode" => 10002,
-                "errorMsg" => "请重新登录"
+                "code" => 11001,
+                "msg" => "请登陆后操作"
             );
             return $this->ajaxReturn($backData);
         }
@@ -56,8 +56,8 @@ class GiftController extends Controller {
         $hasNum = M("MyGoods")->where($goodsWhere)->count();
         if($hasNum > 0){
             $backData = array(
-                "errorCode" => 10003,
-                "errorMsg" => "您已经购买过此产品，无需重复获取"
+                "code" => 13003,
+                "msg" => "您已经购买过此产品，无需重复获取"
             );
             return $this->ajaxReturn($backData);
         }
@@ -87,14 +87,14 @@ class GiftController extends Controller {
 
         if($updateResult && $myGoodsInsert){
             $backData = array(
-                "errorCode" => 10000,
-                "errorMsg" => "OK"
+                "code" => 200,
+                "msg" => "OK"
             );
             $model->commit();
         }else {
             $backData = array(
-                "errorCode" => 10004,
-                "errorMsg" => "系统繁忙,请稍后再试"
+                "code" => 13004,
+                "msg" => "系统繁忙,请稍后再试"
             );
             $model->rollback();
         }
