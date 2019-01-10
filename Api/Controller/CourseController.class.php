@@ -6,20 +6,37 @@ class CourseController extends Controller {
     /**
      * 课程列表
     */
-    public function vlist($page=1,$cid=0){
+    public function vlist(){
+        $thumbUrl = XZSS_BASE_URL .'/thumb/';
         $cateList = M('MainCate')->where('pid !=0 and identification = "course"')->fetchSql(false)->select();
-        $courseWhere = array(
-            "status"    =>1
+        $orderBy = "C.recommend desc,C.sort,C.id desc";
+        $courseCondition = array(
+            "C.status"=>1
         );
         if($cid){
-            $courseWhere['cate_id'] = intval($cid);
+            $courseCondition['C.cate_id'] = intval($cid);
         }
-
+        if(!empty($_GET['tag'])){
+            $tag = I("get.tag");
+            if($tag == 'hot'){
+                $orderBy = 'C.study_num desc,C.recommend desc,C.sort,C.id desc';
+            }elseif($tag== 'free'){
+                $courseCondition['isfree'] = 1;
+            }elseif($tag=='latest'){
+                $orderBy = 'C.id desc';
+            }
+        }
+        $page = I("get.page/d",1);
+        $pageSize = 10;
+        $total = M("Course")->alias("C")->where($courseCondition)->count();        
         $courseList = M("Course")
-            ->field('id,title,thumb,description,isfree,price,period,comment_num')
-            ->where($courseWhere)
-            ->page($page,15)
-            ->order('recommend desc,order_no,id desc')
+        ->alias("C")
+            ->field("C.id,C.title,concat('$thumbUrl',C.thumb) as thumb,C.description,C.isfree,C.price,C.period,C.study_num,CATE.name as cate_name")
+            ->join("__MAIN_CATE__ as CATE on C.cate_id=CATE.id")
+            ->where($courseCondition)
+            ->page($page,$pageSize)
+            ->order($orderBy)
+            ->fetchSql(false)
             ->select();
         //字符截取
         $String = new \Org\Util\String();
@@ -29,15 +46,19 @@ class CourseController extends Controller {
         }
         if($cateList && $courseList !==false){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
-                "cateList"      =>$cateList,
-                "courseList" =>$courseList
+                "code"     =>200,
+                "msg"      =>"success",
+                "data"  =>array(
+                    "cateList"   =>$cateList,
+                    "list" =>$courseList,
+                    "page"=>$page,
+                    "hasMore"=>$total>$page*$pageSize
+                )
             );
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
+                "code"     =>13001,
+                "msg"      =>"数据读取错误"
             );
         }
         $this->ajaxReturn($backData);
@@ -47,101 +68,140 @@ class CourseController extends Controller {
     /**
      * 课程详情
     */
-    public function detail($id){
+    public function detail(){
+        if(empty($_GET['id'])) {
+            $backData = array(
+                "code" => 10001,
+                "msg" => "参数错误"
+            );
+            return $this->ajaxReturn($backData);
+        }
+        $thumbUrl = XZSS_BASE_URL .'/thumb/';
+        $courseId = I("get.id");
         // 1. 获取数据
-        $dataInfo =array();
-        $dataInfo = M('Course')
+        $courseInfo = M('Course')
             ->alias("C")
-            ->field('C.*,T.name as tc_name,T.position as tc_position,T.avatar as tc_avatar')
-            ->join("__TEACHER__ as T on C.teacher_id = T.id")
-            ->where("C.id = $id")
+            ->field("C.*,CONCAT('$thumbUrl',C.thumb) as thumb,CATE.name as cate_name")
+            ->join("__MAIN_CATE__ as CATE on C.cate_id = CATE.id")
+            ->where("C.id = $courseId")
             ->fetchSql(false)
             ->find();
         if($dataInfo){
-            $dataInfo['content'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$dataInfo['content']);
-        }
-        $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-            "courseDetail"  =>$dataInfo
-        );
-        // 2. 查看是否已购买
-        $Account = A("Account");
-        $memberId = $Account->getMemberId();
-        $where = array(
-            'member_id' =>$memberId,
-            "type"      =>2,
-            "pro_id"    =>$id
-        );
-        $myCourse = M("MyGoods")->where($where)->find();
-        if($myCourse){
-            $backData['hasCourse'] = !! 1;
-        }else {
-            $backData['hasCourse'] = !! 0;
+            $courseInfo['content'] = str_replace('src="/Upload/images','src='.XZSS_BASE_URL.'"/images',$courseInfo['content']);
         }
 
+        // 1.1 计算优惠是否过期
+        if($courseInfo['has_yh'] == 1){
+            $oldYhLimit = strtotime($courseInfo['yh_limit']);
+            if($oldYhLimit <= time()){
+                $courseInfo['has_yh'] = 0;
+            }
+        }
+        $orgInfo = M("Org")->field("*,concat('$thumbUrl',logo) as logo")->where(array("id"=>$courseInfo['org_id']))->find();
+
+        $hasCourse = false;
+        $isCollected = false;
+        $Account = A("Account");
+        $memberId = $Account->getMemberId();
+        if($memberId) {
+            // 2.1. 查看是否已购买
+            $where = array(
+                'member_id' =>$memberId,
+                "type"      =>2,
+                "pro_id"    =>$courseId
+            );
+            $myCourse = M("MyGoods")->where($where)->fetchSql(false)->find();
+            if($myCourse) {
+                $hasCourse = true;
+            }
+            // 2.2 查看是否已收藏
+            $collectionInfo = M("Collection")->where($where)->find();
+            if($collectionInfo) {
+                $isCollected = true;
+            }
+        }
+        $backData = array(
+            "code" =>200,
+            "msg"  =>"success",
+            "data" =>array(
+                "info"  =>$courseInfo,
+                "orgInfo"=>$orgInfo,
+                "isHas"     =>$hasCourse,
+                "isCollected"  =>$isCollected
+            )
+        );
         $this->ajaxReturn($backData);
     }
 
     /**
      * 课程目录
-     * @param int   $cid    课程ID
+     * @param int   $courseid    课程ID
      * @param int   $page   页码
     */
-    public function section($cid,$page=1){
-        $sectionList = M('CourseSection')->where(array('course_id'=>$cid))->order('id')->page($page,20)->select();
+    public function section(){
+        if(empty($_GET['courseid'])){
+            $backData = array(
+                "code" => 10001,
+                "msg" => "参数错误"
+            );
+            return $this->ajaxReturn($backData);
+        }
+        $videoBaseUrl = OSS_BASE_URL . "/video/";
+        $page = I("get.page/d",1);
+        $courseId = I("get.courseid");
+        $sectionList = M('CourseSection')
+        ->field("*,CONCAT('$videoBaseUrl',source) as video")
+        ->where(array('course_id'=>$courseId))
+        ->order('id')
+        ->page($page,50)
+        ->select();
         if($sectionList !==false){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
-                "sectionList" =>$sectionList
+                "code"     =>200,
+                "msg"      =>"success",
+                "data"      =>array(
+                    "list" =>$sectionList
+                )
             );
         }else {
             $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
+                "code"     =>13001,
+                "msg"      =>"数据读取错误"
             );
         }
         $this->ajaxReturn($backData);
     }
 
+
     /**
-     * 课程章节详情
-    */
-    public function sectiondetail($id){
-        $memberId = A("Account")->getMemberId();
-        //更新阅读量
-        $updateSql = "update __COURSE_SECTION__ set `view_num`=view_num+1 where id=".$id;
-        $updateResult = M()->execute($updateSql);
-
-        //获取章节内容
-        $result = M("CourseSection")
-        ->where(array('id'=>$id))
-        ->find();
-        $nextInfo = M("CourseSection")->field("id,type")->where("id>$id and course_id = ".$result['course_id'])->order("id asc")->find();
-        $prevInfo = M("CourseSection")->field("id,type")->where("id<$id and course_id = ".$result['course_id'])->order("id desc")->find();
-        $courseInfo = M("Course")->field("thumb")->where("id=".$result['course_id'])->find();
-        //查询是否已经收藏
-        $isCollection = M("Collection")->where("type=2 and member_id=$memberId and pro_id=$id and status=1")->count();
-        if($result && $updateResult){
-            $result['content'] = str_replace('src="/Upload/images','src="http://www.xinzhinetwork.com/Upload/images',$result['content']);
+     * 课程学习人次
+     */
+    public function study(){
+        if(empty($_GET['courseid'])){
             $backData = array(
-                "errorCode"     =>10000,
-                "errorMsg"      =>"success",
-                "next"          =>$nextInfo,
-                "prev"          =>$prevInfo,
-                "sectioninfo"   =>$result,
-                "thumb"         =>$courseInfo['thumb'],
-                "isCollection"  =>!!$isCollection
+                "code" => 10001,
+                "msg" => "参数错误"
             );
-        }else{
-            $backData = array(
-                "errorCode"     =>10001,
-                "errorMsg"      =>"数据读取错误"
-            );
+            return $this->ajaxReturn($backData);  
         }
-        $this->ajaxReturn($backData);
-
+        $courseId = I("get.courseid/d");
+        // 判断是否已经是学员
+        $Account = A("Account");
+        $memberId = $Account->getMemberId();
+        $dataArr = array(
+            "course_id"=>$courseId,
+            "member_id"=>$memberId
+        );
+        $isStudent = M("CourseStudent")->where($dataArr)->count();
+        if(!$isStudent) {
+            $insert = M("CourseStudent")->data($dataArr)->add();
+            $update = M("Course")->where(array('id'=>$courseId))->setInc('study_num');
+        }
+        $backData = array(
+            "code"     =>200,
+            "msg"      =>"success"
+        );
+    $this->ajaxReturn($backData);
     }
 
 }

@@ -4,10 +4,12 @@ return array(
     "LAYOUT_ON" =>false,
     "SHOW_PAGE_TRACE"   =>false,
     define("MODULE_ASSET",ROOT.'/'.MODULE_NAME."/Static/"),
-    define("APP_ID",'wxd8f04177fa03b8d1'),
-    define("APP_KEY",'d985753ad0c7403df114de959568a92c'),
-    define("MERCHANT_NUMBER",'1493417932'),
-    define("MERCHANT_SECRET",'Appkeytangzhiyong158760225551213'),
+    define("APP_ID",'wx90918f938c2ce84f'),
+    define("APP_KEY",'37af34e51910d28a5a8181bf7054d570'),
+    define("MERCHANT_NUMBER",'1520278451'),
+    define("MERCHANT_SECRET",'efeb9307948babb496987638c4e9021d'),
+    define("XZSS_BASE_URL",'http://www.xinzhinetwork.com/gongfu/Upload'),
+    define("OSS_BASE_URL",'http://xz-gongfu.oss-cn-shenzhen.aliyuncs.com')
 
 
 

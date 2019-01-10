@@ -1,8 +1,11 @@
 <div class="panel">
+    <div class="panel-heading">
+        <a href="{:U('add')}" class="btn btn-info">添加专栏</a>
+    </div>
     <div class="panel-body" style="padding:20px 0;">
         <empty name="output['list']">
             {$emptyHtml}
-            <else/>
+            <else />
             <div class="m-columnist">
                 <foreach name="output['list']" item="vo">
                     <div class="list">
@@ -27,4 +30,3 @@
         </div>
     </div>
 </div>
-

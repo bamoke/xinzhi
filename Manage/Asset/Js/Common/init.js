@@ -1,7 +1,6 @@
 /**
  * Created by joy.wangxiangyin on 2016/9/2.
  */
-var rootDir = '/xinzhi';
 require.config({
     "paths":{
         "jq":rootDir + "/Public/Js/jquery-1.10.1.min",

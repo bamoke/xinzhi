@@ -2,9 +2,21 @@
     <div class="panel-body">
         <form name="add-form" class="form form-horizontal" action="{:U('a_update',array('id'=>$output['data']['id']))}">
             <div class="form-group">
-                <label class="control-label col-xs-2">讲师姓名:</label>
+                <label class="control-label col-xs-2">教练姓名:</label>
                 <div class="col-xs-5">
                     <input type="text" name="name" class="form-control" value="{$output['data']['name']}">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>所属机构:</label>
+                <div class="col-xs-5">
+                    <select name="org_id" class="form-control">
+                        <option value="">请选择机构</option>
+                        <foreach name="orgList" item="v">
+                            <option value="{$v['id']}" <eq name="v['id']" value="$output['data']['org_id']">selected="selected"</eq> >{$v['name']}</option>
+                        </foreach>
+                    </select>
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
@@ -14,8 +26,9 @@
                     <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
                         <empty name="output['data']['avatar']">
                             <a href="javascript:" class="add-btn js-add-btn"></a>
-                            <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
-                            <else/>
+                            <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span>
+                            </div>
+                            <else />
                             <a href="javascript:" class="add-btn js-add-btn hidden"></a>
                             <div class="thumb-box">
                                 <img class="thumb" src="{$Think.const.UPLOAD}/avatar/{$output['data']['avatar']}">
@@ -23,13 +36,13 @@
                             </div>
                             <input type="hidden" class="js-old-thumb" name="oldthumb" value="{$output['data']['avatar']}">
                         </empty>
-                        <input type="file" name="avatar" class="js-file-input" style="opacity: 0" >
+                        <input type="file" name="avatar" class="js-file-input" style="opacity: 0">
                     </div>
                 </div>
                 <div class="col-xs-3 tips">建议尺寸：250px×250px,格式jpg或png</div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-2">职位\职称:</label>
+                <label class="control-label col-xs-2">资质\描述:</label>
                 <div class="col-xs-5">
                     <textarea name="position" class="form-control" placeholder="如：某世界五百强企业财务总监、中央财政大学客座教授">{$output['data']['position']}</textarea>
                 </div>

@@ -3,7 +3,6 @@
  */
 require.config({
     "paths":{
-        "datetimepicker":rootDir+"/Public/lib/bootstrap/js/bootstrap-datetimepicker.min",
         'ueditor':[rootDir+"/Public/lib/ueditor433/ueditor.all.min"],
         'ueditor_conf':[rootDir+"/Public/lib/ueditor433/ueditor.config"],
         "ZeroClipboard":[rootDir+"/Public/lib/ueditor433/third-party/zeroclipboard/ZeroClipboard.min"],
@@ -85,7 +84,7 @@ require(['../Common/init'],function(){
                 name:'required'
             },
             messages:{
-                name:'讲师姓名不能为空'
+                name:'机构名称不能为空'
 
             },
             submitHandler:function(form){
@@ -102,7 +101,7 @@ require(['../Common/init'],function(){
                 name:'required'
             },
             messages:{
-                name:'讲师姓名不能为空'
+                name:'机构名称不能为空'
 
             },
             submitHandler:function(form){

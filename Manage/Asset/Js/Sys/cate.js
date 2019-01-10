@@ -1,7 +1,6 @@
 /**
  * Created by wetz1 on 2017/10/5.
  */
-var rootDir = '/xinzhi';
 require.config({
     "paths": {
         "jqvalidate": rootDir + "/Public/Js/jquery.validate.min"

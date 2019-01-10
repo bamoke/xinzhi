@@ -24,8 +24,12 @@
                 <div class="info">
                     <div class="title">{$columnistInfo['title']}</div>
                     <div class="desc">{$columnistInfo['description']}</div>
-                    <div class="price">￥{$columnistInfo['price']}</div>
-                    <div class="total-info"><span>开通人数:345</span></div>
+                    <if condition="$columnistInfo['isfree']" value="1">
+                            <div class="text-success">免费</div>
+                            <else/>
+                            <div class="price">￥{$columnistInfo['price']}</div>
+                        </if>
+                    <div class="total-info"><span>开通人数:{$columnistInfo['subscribers']}</span></div>
                 </div>
             </div>
             <div class="right-info">

@@ -15,12 +15,23 @@
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
-
             <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>专家\讲师:</label>
+                    <label class="control-label col-xs-2"><span class="symbol">*</span>机构:</label>
+                    <div class="col-xs-5">
+                        <select name="org_id" class="form-control">
+                            <option value="">请选择机构</option>
+                            <foreach name="output['orgList']" item="v">
+                                <option value="{$v['id']}" <eq name="v['id']" value="$courseInfo['org_id']">selected</eq> >{$v['name']}</option>
+                            </foreach>
+                        </select>
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>教练:</label>
                 <div class="col-xs-5">
                     <select name="teacher_id" class="form-control">
-                        <option value="">请选择专家\讲师</option>
+                        <option value="">请选择教练</option>
                         <foreach name="output['teacherList']" item="v">
                             <option value="{$v['id']}" <if condition="$v['id'] eq $courseInfo['teacher_id']">selected</if>>{$v['name']}</option>
                         </foreach>
@@ -51,20 +62,6 @@
                 <label class="control-label col-xs-2"><span class="symbol">*</span>课程描述:</label>
                 <div class="col-xs-5">
                     <input type="text" name="description" class="form-control" placeholder="建议25个字符以内" value="{$courseInfo['description']}">
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>适用人群:</label>
-                <div class="col-xs-5">
-                    <textarea name="main_people" class="form-control" placeholder="200字符以内">{$courseInfo['main_people']}</textarea>
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>学习目标:</label>
-                <div class="col-xs-5">
-                    <textarea name="study_target" class="form-control" placeholder="200字符以内">{$courseInfo['study_target']}</textarea>
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>

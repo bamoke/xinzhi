@@ -10,21 +10,14 @@ namespace Manage\Controller;
 use Manage\Common\Controller\AuthController;
 
 
-class TeacherController extends AuthController
+class OrganizationController extends AuthController
 {
     function index(){
         $curModel = M();
-        $sql = '
-        select T.*,
-        (select count(*) from __COLUMNIST__ where teacher_id = T.id) as columnist_num,
-        (select count(*) from __COURSE__ where teacher_id = T.id) as course_num,O.name as org_name 
-        from __TEACHER__ as T 
-        join __ORG__ as O on T.org_id = O.id
-        ';
-//        $list = $curModel->where(array('status'=>1))->select();
-        $list = $curModel->query($sql);
 
+        $list = M("Org")->select();
         $outData = array(
+            "script"=>CONTROLLER_NAME."/index",
             "list"  =>$list
         );
         $this->assign('output',$outData);
@@ -35,38 +28,37 @@ class TeacherController extends AuthController
         $outData = array(
             "script"=>CONTROLLER_NAME."/main"
         );
-        $orgList = M("Org")->field("id,name")->where(array('status'=>1))->select();
+        $this->assign('pageName',"添加机构");
         $this->assign('output',$outData);
-        $this->assign('orgList',$orgList);
         $this->display();
     }
 
     function a_add(){
         $backData = array();
         if(IS_POST){
-            $curModel = D('Teacher');
+            $curModel = D('Org');
             $uploadDir = ROOT_DIR.'/Upload/';
             $result = $curModel->create();
             if($result){
-                if($_FILES['avatar']['tmp_name']){
+                if($_FILES['thumb']['tmp_name']){
                     //图片处理
                     $upload_conf=array(
                         'maxSize' => 3145728,
                         'rootPath' => $uploadDir,
-                        'savePath' => 'avatar/',
+                        'savePath' => 'thumb/',
                         'saveName' => md5(time().I("session.uid")),
                         'exts' => array('jpg', 'gif', 'png', 'jpeg'),
                         'autoSub' => false,
                         'subName' => date("Ym",time())
                     );
                     $upload = new \Think\Upload($upload_conf);
-                    $uploadResult = $upload->uploadOne($_FILES["avatar"]);
+                    $uploadResult = $upload->uploadOne($_FILES["thumb"]);
                     if(!$uploadResult){
                         $backData['status'] = 0;
                         $backData['msg'] = $upload->getError();
                         return $this->ajaxReturn(json_encode($backData));
                     }else{
-                        $curModel->avatar = $uploadResult['savename'];
+                        $curModel->logo = $uploadResult['savename'];
                     }
                 }
 
@@ -91,43 +83,42 @@ class TeacherController extends AuthController
     }
 
     public function edit($id){
-        $curModel = M("Teacher");
+        $curModel = M("Org");
         $result =  $curModel->where(array("id"=>$id))->find();
-        $orgList = M("Org")->field("id,name")->where(array('status'=>1))->select();
         $outData = array(
             "script"=>CONTROLLER_NAME."/main",
             "data"  =>$result
         );
         $this->assign('output',$outData);
-        $this->assign('orgList',$orgList);
+        $this->assign('pageName',"编辑机构资料");
         $this->display();
     }
 
     public function a_update($id){
         if(IS_POST){
-            $curModel = D('Teacher');
+            $curModel = D('Org');
             $uploadDir = ROOT_DIR.'/Upload/';
             $result = $curModel->create();
             if($result){
-                if($_FILES['avatar']['tmp_name']){
+                if($_FILES['thumb']['tmp_name']){
                     //图片处理
                     $upload_conf=array(
                         'maxSize' => 3145728,
                         'rootPath' => $uploadDir,
-                        'savePath' => 'avatar/',
+                        'savePath' => 'thumb/',
                         'saveName' => md5(time().I("session.uid")),
                         'exts' => array('jpg', 'gif', 'png', 'jpeg'),
                         'autoSub' => false,
                         'subName' => date("Ym",time())
                     );
                     $upload = new \Think\Upload($upload_conf);
-                    $uploadResult = $upload->uploadOne($_FILES["avatar"]);
+                    $uploadResult = $upload->uploadOne($_FILES["thumb"]);
                     if(!$uploadResult){
                         $backData['status'] = 0;
                         $backData['msg'] = $upload->getError();
                         return $this->ajaxReturn(json_encode($backData));
                     }else{
-                        $curModel->avatar = $uploadResult['savename'];
+                        $curModel->thumb = $uploadResult['savename'];
                         $this->del_thumb($id);
                     }
                 }
@@ -155,9 +146,9 @@ class TeacherController extends AuthController
 
 
     protected function del_thumb($id){
-        $dir = ROOT_DIR."/Upload/avatar/";
-        $result = M("Teacher")->field("avatar")->where('id='.$id)->find();
-        @unlink($dir.$result['avatar']);
+        $dir = ROOT_DIR."/Upload/thumb/";
+        $result = M("Org")->field("logo")->where('id='.$id)->find();
+        @unlink($dir.$result['logo']);
     }
 
 }

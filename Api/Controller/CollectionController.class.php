@@ -1,86 +1,92 @@
 <?php
 namespace Api\Controller;
-use Think\Controller;
-class CollectionController extends Controller {
-    private $memberId;
-    public function _initialize(){
-        $this->memberId = A("Account")->getMemberId();
-        if(!$this->memberId){
-            $backData = array(
-                "errorCode" =>11000,
-                "errorMsg"  =>"请重新登陆"
-            );
-            $this->ajaxReturn($backData);
-        }
-    }
-
-    /**
-     * collection operation
-     */
-    public function index(){
+use Api\Common\Controller\AuthController;
+class CollectionController extends AuthController {
+    public function docollect () {
         $model = M("Collection");
-        $queryData = array(
-            "member_id" =>$this->memberId,
+        $data = array(
+            "member_id" =>$this->uid,
             "type"      =>I("get.type"),
             "pro_id"    =>I("get.proid")
         );
-        if(I("get.actype") == 1){
-            $isExist = $model->field("id")->where($queryData)->find();
-            if($isExist){
-                $result = $model->where("id=".$isExist['id'])->data(array("status"=>1))->save();
-            }else {
-                $result = $model->data($queryData)->add();
-            }
+        $collectionInfo = $model->where($data)->find();
+        if($collectionInfo) {
+            $status = $collectionInfo['status'] == 1?0:1;
+            $result = $model->where(array('id'=>$collectionInfo['id']))->data(array("status"=>$status))->fetchSql(false)->save();
         }else {
-            $result = $model->where($queryData)->data(array("status"=>0))->save();
+            $result = $model->data($data)->fetchSql(false)->add();
         }
-        if($result){
+        if($result ===false) {
             $backData = array(
-                "errorCode" =>10000,
-                "errorMsg"  =>"success",
+                "code" =>13001,
+                "msg"  =>"操作失败",
             );
-        }else {
-            $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>"系统繁忙",
-            );
+            $this->ajaxReturn($backData);
         }
-
+        $backData = array(
+            "code" =>200,
+            "msg"  =>"success",
+        );
         $this->ajaxReturn($backData);
+
     }
+
+ 
 
     /**
      * My collection
      */
-    public function mycollection($type,$page=1){
-        $modelName = $type == 1? "__COLUMNIST_ARTICLE__":"__COURSE_SECTION__";
+    public function vlist(){
+        $thumbUrl = XZSS_BASE_URL .'/thumb/';
+        $type=I("get.type/d",1);
+        $page = I("get.page/d",1);
+        $pageSize = 20;
+        $modelName = $type == 1? "__COLUMNIST__":"__COURSE__";
+        $condition = array(
+            "C.member_id"   =>$this->uid,
+            "C.type"        =>$type
+        );
+        $total = M("Collection")->alias("C")->where($condition)->count();
+        $field = "Pro.id,Pro.title,CONCAT('$thumbUrl',Pro.thumb) as thumb,Pro.has_yh,Pro.yh_limit,Pro.yh_price,Pro.price,Pro.isfree";
+        if($type ==1) {
+            $field .= "";
+        }elseif($type==2){
+            $field .= ",Pro.study_num";
+        }
         $list = M("Collection")
         ->alias("C")
-        ->field("C.pro_id,Pro.title")
+        ->field($field)
         ->join($modelName." as Pro on Pro.id = C.pro_id")
-        ->where("C.member_id = ".$this->memberId." and C.type=".$type." and C.status=1")
-        ->page($page,20)
+        ->where($condition)
+        ->page($page,$pageSize)
         ->select();
         if($list !== false){
-            $backData = array(
-                "errorCode" =>10000,
-                "errorMsg"  =>"success",
-                "list"      =>$list
-            );   
-            if(count($list) < 20 ){
-                $backData['hasMore'] = !!0;
-            }else {
-                $count = M("Collection")->alias("C")->where("C.member_id = ".$this->memberId." and C.type=".$type." and C.status=1")->count();
-                if($count > $page*20){
-                    $backData['hasMore'] = !!1;
-                }else {
-                    $backData['hasMore'] = !!0;
+
+            // 1.1 计算优惠是否过期
+            if(count($list)) {
+                foreach($list as $key=>$val) {
+                    if($val['has_yh'] == 1){
+                        $oldYhLimit = strtotime($val['yh_limit']);
+                        if($oldYhLimit <= time()){
+                            $list[$key]['has_yh'] = 0;
+                        }
+                    }
                 }
             }
+            $backData = array(
+                "code" =>200,
+                "msg"  =>"success",
+                "data"  =>array(
+                    "page"      =>$page,
+                    "total"     =>$total,
+                    "list"      =>$list,
+                    "hasMore"   =>$total > $page*$pageSize
+                )
+            );   
         }else {
             $backData = array(
-                "errorCode" =>10001,
-                "errorMsg"  =>"系统繁忙",
+                "code" =>13001,
+                "msg"  =>"系统繁忙",
             );
         }
         $this->ajaxReturn($backData);

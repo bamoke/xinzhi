@@ -3,28 +3,17 @@
         <div class="u-page-title">添加课程章节</div>
         <form name="add-section-form" id="sectionForm" class="form form-horizontal" action="{:U('a_add_section')}">
             <input type="hidden" name="course_id" value="{$Think.get.cid}">
-
+            <input type="hidden" name="type" value="3" id="js-section-type">
+                
             <div class="form-group">
-                <label class="control-label col-xs-2">类型:</label>
-                <div class="col-xs-5">
-                    <select name="type" class="form-control" id="js-section-type">
-                        <option value="">请选择类型</option>
-                        <option value="1">音频</option>
-                        <option value="2">视频</option>
-                    </select>
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label col-xs-2">章节名称:</label>
+                <label class="control-label col-xs-2"><span class="symbol">*</span>章节名称:</label>
                 <div class="col-xs-5">
                     <input type="text" name="title" class="form-control" value="" placeholder="建议6-14个字符">
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-2">音/视频名称:</label>
+                <label class="control-label col-xs-2"><span class="symbol">*</span>视频:</label>
                 <div class="col-xs-5">
                     <input type="hidden" name="source" id='js-article-source'>
 
@@ -40,13 +29,23 @@
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
-
             <div class="form-group">
-                <label class="control-label col-xs-2">内容详情:<p>编辑器里面图片宽度小于1200px;建议750px</p></label>
-                <div class="col-xs-8">
-                    <script id="editorContainer" name="content"></script>
+                <label class="control-label col-xs-2"><span class="symbol">*</span>视频时长:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="duration" class="form-control" value="" placeholder="必填；如:09:34">
                 </div>
+                <div class="col-xs-3 tips"></div>
             </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">是否免费:</label>
+                <div class="col-xs-4">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="isfree" value="1"> 是
+                    </label>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
 
 
             <div class="form-group">

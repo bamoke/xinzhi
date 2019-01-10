@@ -1,7 +1,6 @@
 /**
  * Created by joy.wangxiangyin on 2017/6/24.
  */
-var rootDir = '/ehome';
 require.config({
     "paths":{
         'ueditor':[rootDir+"/Public/lib/ueditor433/ueditor.all.min"],
@@ -15,7 +14,7 @@ require.config({
     }
 });
 
-require(['../Common/init'],function(){
+require(['../Common/init','../Common/pluploadset'],function(){
     require(["base","ueditor","ZeroClipboard","ueditor_conf","jqvalidate"],function(bs,UE,ZeroClipboard){
 
         /***编辑器配置***/

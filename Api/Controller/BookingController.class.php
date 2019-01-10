@@ -20,18 +20,61 @@ class BookingController extends Controller {
     //booking detail
     public function detail($id){
         $curModel = M("Booking");
-        $info = $curModel->where("id=$id")->find();
-        $listCondition = array(
-            "booking_id"    =>$id,
-            "deadline"      =>array('gt',date("Y-m-d",time())),
-            "status"    =>1
-        );
-        $phaseList = M("BookingPhase")->where($listCondition)->order("lesson_month desc")->page(1,10)->select();
+        $info = $curModel
+        ->where("id=$id")
+        ->find();
+
+        // 重新计算优惠信息
+        if($info['has_yh'] == 1 && strtotime($info['yh_limit']) <= time()){
+            $info['has_yh']=0;
+        }
+        // 设置缩略图URL
+        $info['thumb'] = XZSS_BASE_URL."/thumb/".$info['thumb'];
+
+        // 计算报名是否截至
+        $enroll_end = 0;
+        if(strtotime($info['enroll_limit']) <= time()){
+            $enroll_end = 1;
+        }
+
+        // 重新计算已报名人数
+        $enrollNum = $info['enroll_person'];
+        $recruitNum =$info['person_limit'];
+        if($enrollNum == 0) {
+            $info['enroll_person'] = ceil($recruitNum/2);
+        }elseif($enrollNum <= floor($recruitNum/2)) {
+            $info['enroll_person'] = ceil($recruitNum/2) + $info['enroll_person'];
+        }
+
+        // 获取机构信息
+        $orgInfo = M("Org")
+        ->field("id,name,logo")
+        ->where(array('id'=>$info['org_id']))
+        ->find();
+        $orgInfo['logo'] = XZSS_BASE_URL."/thumb/".$orgInfo['logo'];
+
+        // 查看是否已经报名
+        $Account = A("Account");
+        $memberId = $Account->getMemberId();
+        $enrollLog = M("BookingLog")
+        ->where(array('booking_id'=>$id,'member_id'=>$memberId))
+        ->count();
+
+        // 查看收藏记录
+        $isCollected = M("Collection")
+        ->where(array("type"=>3,"pro_id"=>$id,"member_id"=>$memberId))
+        ->count();
+
         $backData = array(
-            "errorCode" =>10000,
-            "errorMsg"  =>"success",
-            "info"      =>$info,
-            "phaseList" =>$phaseList
+            "code" =>200,
+            "msg"  =>"success",
+            "data"=>array(
+                "info"      =>$info,
+                "orgInfo"   =>$orgInfo,
+                "enrollEnd" =>!!$enroll_end,
+                "isHas" =>!!$enrollLog,
+                "isCollected"=>!!$isCollected
+            )
         );
         $this->ajaxReturn($backData);
     }

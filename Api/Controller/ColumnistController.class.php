@@ -242,14 +242,14 @@ class ColumnistController extends Controller {
          $myGoodsInsert = M("MyGoods")->data($myGoodsData)->add();
          if($updateColunist && $myGoodsInsert){
              $backData = array(
-                 "errorCode" => 10000,
-                 "errorMsg" => "success",
+                 "code" => 200,
+                 "msg" => "success",
              );
              $model->commit();
          }else {
              $backData = array(
-                 "errorCode" => 10001,
-                 "errorMsg" => "数据保存错误"
+                 "code" => 13001,
+                 "msg" => "数据保存错误"
              );
              $model->rollback();
          }

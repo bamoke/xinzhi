@@ -24,7 +24,7 @@ return array(
 //    "DB_HOST"   =>"localhost",
     "DB_HOST"   =>"112.74.42.16",
     "DB_PORT"   =>"3306",
-    "DB_NAME"   =>"xinzhi",
+    "DB_NAME"   =>"ccgf",
     "DB_TYPE"   =>"mysql",
     "DB_USER"   =>"root",
 //    "DB_PWD"    =>"123456",

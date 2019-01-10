@@ -1,7 +1,6 @@
 /**
  * Created by joy.wangxiangyin on 2017/6/24.
  */
-var rootDir = '/xinzhi';
 require.config({
     "paths":{
         "datetimepicker":rootDir+"/Public/lib/bootstrap/js/bootstrap-datetimepicker.min",

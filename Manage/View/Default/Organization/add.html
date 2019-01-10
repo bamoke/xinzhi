@@ -1,40 +1,45 @@
 <div class="panel">
+    <div class="panel-heading">
+        <div class="panel-title">添加机构</div>
+    </div>
     <div class="panel-body">
         <form name="add-form" class="form form-horizontal" action="{:U('a_add')}">
             <div class="form-group">
-                <label class="control-label col-xs-2">教练姓名:</label>
+                <label class="control-label col-xs-2">机构名称:</label>
                 <div class="col-xs-5">
                     <input type="text" name="name" class="form-control" value="">
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>所属机构:</label>
-                <div class="col-xs-5">
-                    <select name="org_id" class="form-control">
-                        <option value="">请选择机构</option>
-                        <foreach name="orgList" item="v">
-                            <option value="{$v['id']}">{$v['name']}</option>
-                        </foreach>
-                    </select>
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-xs-2">头像:</label>
+                <label class="control-label col-xs-2">机构LOGO:</label>
                 <div class="col-xs-2">
                     <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
                         <a href="javascript:" class="add-btn js-add-btn"></a>
                         <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
-                        <input type="file" name="avatar" class="js-file-input" style="opacity: 0">
+                        <input type="file" name="thumb" class="js-file-input" style="opacity: 0">
                     </div>
                 </div>
                 <div class="col-xs-3 tips">建议尺寸：250px×250px,格式jpg或png</div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-2">资质\描述:</label>
+                <label class="control-label col-xs-2">电话:</label>
                 <div class="col-xs-5">
-                    <textarea name="position" class="form-control" placeholder="如：某某高级教练"></textarea>
+                    <input type="text" name="tel" class="form-control" value="">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">地址:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="addr" class="form-control" value="">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">联系人:</label>
+                <div class="col-xs-5">
+                    <input type="text" name="contact" class="form-control" value="">
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>

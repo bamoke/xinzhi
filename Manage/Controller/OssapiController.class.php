@@ -13,7 +13,7 @@ class OssapiController extends AuthController {
     public function index($type){
     $id= 'LTAIfsMWSLxCJB4U';
     $key= 'TGdFsULBsWuL3QWPVsBy3UEzN03PII';
-    $host = 'http://wesource.oss-cn-shenzhen.aliyuncs.com';
+    $host = 'http://xz-gongfu.oss-cn-shenzhen.aliyuncs.com';
 
     $now = time();
     $expire = 30; //设置该policy超时时间是10s. 即这个policy过了这个有效时间，将不能访问

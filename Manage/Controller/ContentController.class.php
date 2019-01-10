@@ -14,7 +14,7 @@ class ContentController extends AuthController
 
     public function index($cid = null){
         $output['script'] = CONTROLLER_NAME."/main";
-        $cate = M('Content_cate')->where('status = 1 and id !=2')->select();
+        $cate = M('Content_cate')->where('status = 1')->select();
         $cateHtml = $this->_get_cate_Html($cate);
         $this->assign('cateHtml',$cateHtml);
         $this->assign('output',$output);
@@ -60,6 +60,7 @@ class ContentController extends AuthController
             $this->assign('position',$this->_get_banner_position());
         }
         $this->assign('output',$output);
+        $this->assign('pageName',"添加");
         $this->display($page_type."-add");
     }
 
@@ -84,7 +85,7 @@ class ContentController extends AuthController
                     $upload_conf=array(
                         'maxSize' => 3145728,
                         'rootPath' => ROOT_DIR.'/Upload/',
-                        'savePath' => 'images/',
+                        'savePath' => 'thumb/',
                         'saveName' => md5(time().I("session.uid")),
                         'exts' => array('jpg', 'gif', 'png', 'jpeg'),
                         'autoSub' => false,
@@ -165,7 +166,7 @@ class ContentController extends AuthController
                 $upload_conf=array(
                     'maxSize' => 3145728,
                     'rootPath' => ROOT_DIR.'/Upload/',
-                    'savePath' => 'images/',
+                    'savePath' => 'thumb/',
                     'saveName' => md5(time().I("session.uid")),
                     'exts' => array('jpg', 'gif', 'png', 'jpeg'),
                     'autoSub' => false,
@@ -300,7 +301,7 @@ class ContentController extends AuthController
     ***/
 
     protected function del_img($tableName,$id){
-        $dir = ROOT_DIR."/Upload/images/";
+        $dir = ROOT_DIR."/Upload/thumb/";
         $result = M($tableName)->field('img')->where('id='.$id)->find();
         @unlink($dir.$result['img']);
     }

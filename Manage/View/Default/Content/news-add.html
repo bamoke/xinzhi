@@ -1,18 +1,46 @@
 <div class="panel">
     <div class="panel-body">
-        <div  class="u-page-title"><span class="caption">添加新闻资讯</span> </div>
+        <div class="u-page-title"><span class="caption">添加文章</span> </div>
         <form name="news-form" class="form form-horizontal" action="{:U('save',array('page_type'=>$_GET['page_type']))}">
             <input type="hidden" name="cid" value="{$Think.get.cid}">
             <div class="form-group">
-                <label class="control-label col-xs-1">新闻标题:</label>
+                <label class="control-label col-xs-1">文章标题:</label>
                 <div class="col-xs-8">
                     <input type="text" name="title" class="form-control" value="">
                 </div>
             </div>
             <div class="form-group">
+                <label class="control-label col-xs-1">封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <a href="javascript:" class="add-btn js-add-btn"></a>
+                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                        <input type="file" name="img" class="js-file-input" style="opacity: 0">
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-1">音/视频:</label>
+                <div class="col-xs-5">
+                    <input type="hidden" name="source" id='js-article-source'>
+
+                    <!-- plupupload start -->
+                    <!-- <h4>您所选择的文件列表：</h4> -->
+                    <div id="ossfile"></div>
+                    <div id="container">
+                        <a id="selectfiles" href="javascript:void(0);" class='btn btn-default'>选择文件</a>
+                        <a id="postfiles" href="javascript:void(0);" class='btn btn-info'>开始上传</a>
+                    </div>
+                    <div id="console"></div>
+                    <!-- plupupload end -->
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
                 <label class="control-label col-xs-1">是否推荐:</label>
                 <div class="col-xs-8">
-                    <label class="checkbox-inline"><input type="radio" name="recommend" value="1"  />是</label>
+                    <label class="checkbox-inline"><input type="radio" name="recommend" value="1" />是</label>
                     <label class="checkbox-inline"><input type="radio" name="recommend" value="0" checked />否</label>
                 </div>
             </div>
@@ -29,13 +57,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-xs-1">关键词:</label>
-                <div class="col-xs-8">
-                    <input type="text" name="keywords" class="form-control" value="">
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-xs-1">新闻描述:</label>
+                <label class="control-label col-xs-1">文章描述:</label>
                 <div class="col-xs-8">
                     <textarea name="description" class="form-control"></textarea>
                 </div>

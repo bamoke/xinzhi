@@ -2,7 +2,7 @@
     <div class="panel-body">
         <div class="u-page-title">{$pageName}</div>
         <form name="add-form" class="form form-horizontal" action="{:U('a_add')}">
-            <input type="hidden" name="type" value="1"/>
+            <input type="hidden" name="type" value="1" />
             <div class="form-group">
                 <label class="control-label col-xs-2"><span class="symbol">*</span>培训机构</label>
                 <div class="col-xs-5">
@@ -23,7 +23,17 @@
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
-
+            <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>封面:</label>
+                <div class="col-xs-2">
+                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
+                        <a href="javascript:" class="add-btn js-add-btn"></a>
+                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
+                        <input type="file" name="thumb" class="js-file-input" style="display: none;">
+                    </div>
+                </div>
+                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+            </div>
             <div class="form-group">
                 <label class="control-label col-xs-2"><span class="symbol">*</span>课程描述:</label>
                 <div class="col-xs-5">
@@ -32,19 +42,44 @@
                 <div class="col-xs-3 tips"></div>
             </div>
 
-
-
             <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>封面:</label>
+                <label class="control-label col-xs-2">招生人数:</label>
                 <div class="col-xs-2">
-                    <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
-                        <a href="javascript:" class="add-btn js-add-btn"></a>
-                        <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
-                        <input type="file" name="thumb" class="js-file-input" style="display: none;" >
-                    </div>
+                    <input type="text" name="person_limit" value="" placeholder="请填入整数" class="form-control js-price">
                 </div>
-                <div class="col-xs-3 tips">建议尺寸750px×300px</div>
+                <div class="col-xs-3 tips"></div>
             </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">报名截止日期:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="enroll_limit" value="" placeholder="如:2018-12-01" class="form-control js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">价格:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="price" value="" placeholder="请填入整数或小数" class="form-control js-price">
+                </div>
+                <div class="col-xs-2"><label class="control-label"><input type="checkbox" name="has_yh" value="1" id="js-set-yh">设置优惠</label> </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">优惠价:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="yh_price" value="" disabled placeholder="请填入整数或小数" class="form-control js-yh-input js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-2">优惠截止日期:</label>
+                <div class="col-xs-2">
+                    <input type="text" name="yh_limit" value="" disabled placeholder="如:2018-12-01" class="form-control js-yh-input js-price">
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+
 
             <div class="form-group">
                 <label class="control-label col-xs-2">课程介绍详情:</label>
@@ -53,13 +88,6 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-2">价格:</label>
-                <div class="col-xs-2">
-                    <input type="text" name="price" value="" placeholder="请填入整数或小数" class="form-control js-price">
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
             <div class="form-group">
                 <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
                 <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>

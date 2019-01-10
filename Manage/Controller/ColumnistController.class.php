@@ -168,7 +168,7 @@ class ColumnistController extends AuthController
 
     /***专栏详情***/
     function detail($id){
-        $columnistInfo = M("Columnist")->field("id,thumb,title,description,price,status")->where(array("id"=>$id))->find();
+        $columnistInfo = M("Columnist")->field("id,thumb,title,description,price,status,subscribers")->where(array("id"=>$id))->find();
         $articleList = M("ColumnistArticle")->field()->where(array("columnist_id"=>$id))->order("id desc")->select();
         $outData = array(
             "script"=>CONTROLLER_NAME."/main"

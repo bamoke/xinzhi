@@ -1,4 +1,7 @@
 <div class="panel">
+    <div class="panel-heading">
+        <div class="panel-title">添加课程</div>
+    </div>
     <div class="panel-body">
         <form name="add-form" class="form form-horizontal" action="{:U('a_add')}">
             <div class="form-group">
@@ -15,10 +18,23 @@
             </div>
 
             <div class="form-group">
+                <label class="control-label col-xs-2"><span class="symbol">*</span>机构:</label>
+                <div class="col-xs-5">
+                    <select name="org_id" class="form-control">
+                        <option value="">请选择机构</option>
+                        <foreach name="output['orgList']" item="v">
+                            <option value="{$v['id']}">{$v['name']}</option>
+                        </foreach>
+                    </select>
+                </div>
+                <div class="col-xs-3 tips"></div>
+            </div>
+
+            <div class="form-group">
                 <label class="control-label col-xs-2"><span class="symbol">*</span>专家\讲师:</label>
                 <div class="col-xs-5">
                     <select name="teacher_id" class="form-control">
-                        <option value="">请选择专家\讲师</option>
+                        <option value="">请选择教练</option>
                         <foreach name="output['teacherList']" item="v">
                             <option value="{$v['id']}">{$v['name']}</option>
                         </foreach>
@@ -52,20 +68,6 @@
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
-            <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>适用人群:</label>
-                <div class="col-xs-5">
-                    <textarea name="main_people" class="form-control" placeholder="200字符以内"></textarea>
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-xs-2"><span class="symbol">*</span>学习目标:</label>
-                <div class="col-xs-5">
-                    <textarea name="study_target" class="form-control" placeholder="200字符以内"></textarea>
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
 
             <div class="form-group">
                 <label class="control-label col-xs-2"><span class="symbol">*</span>封面:</label>
@@ -73,7 +75,7 @@
                     <div class="m-thumbnail-upload" id="js-thumb-upload-panel">
                         <a href="javascript:" class="add-btn js-add-btn"></a>
                         <div class="thumb-box hidden"><img class="thumb" style=""><span class="del-btn">删除</span> </div>
-                        <input type="file" name="thumb" class="js-file-input" style="display: none;" >
+                        <input type="file" name="thumb" class="js-file-input" style="display: none;">
                     </div>
                 </div>
                 <div class="col-xs-3 tips">建议尺寸750px×300px</div>
@@ -90,7 +92,7 @@
                 <label class="control-label col-xs-2">是否免费:</label>
                 <div class="col-xs-4 js-isfree-radio">
                     <label class="radio-inline">
-                        <input type="radio" name="isfree" value="1" > 免费
+                        <input type="radio" name="isfree" value="1"> 免费
                     </label>
                     <label class="radio-inline">
                         <input type="radio" name="isfree" value="0" checked> 收费

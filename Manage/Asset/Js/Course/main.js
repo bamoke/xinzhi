@@ -1,7 +1,6 @@
 /**
  * Created by joy.wangxiangyin on 2017/6/24.
  */
-var rootDir = '/xinzhi';
 require.config({
     "paths": {
         "datetimepicker": rootDir + "/Public/lib/bootstrap/js/bootstrap-datetimepicker.min",
@@ -107,6 +106,7 @@ require(['../Common/init','../Common/pluploadset'], function (pluploadset) {
             //debug:true,
             rules: {
                 cate_id: "required",
+                org_id: "required",
                 teacher_id: "required",
                 title: 'required',
                 price: "number",
@@ -114,7 +114,8 @@ require(['../Common/init','../Common/pluploadset'], function (pluploadset) {
             },
             messages: {
                 cate_id: "请选择所属类别",
-                teacher_id: "请选择专家\\讲师",
+                org_id: "请选择机构",
+                teacher_id: "请选择教练",
                 title: '课程名称不能为空',
                 price: "必须为整数或小数",
 

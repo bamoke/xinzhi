@@ -46,6 +46,7 @@ class AccountController extends Controller {
             );
             return $this->ajaxReturn($backData);              
         }
+
         // 1.1.4 validate code
         $codeInfo = M("SmsCode")->where(array("phone"=>$phone))->find();
         if(!$codeInfo || $code != $codeInfo['code']) {
@@ -63,27 +64,18 @@ class AccountController extends Controller {
             return $this->ajaxReturn($backData);            
         }
 
-        // 1.2 insert
+
+        // 1.2 insert member account
         $memberData = array(
             "phone"         => $phone,
             "password"      => md5($password."xz"),
-            "reg_time"      => time()
+            "reg_time"      =>time()
         );
         
         $model = M();
         $model->startTrans();
-        $insertMemberId = M("Member")->data($memberData)->fetchSql(false)->add();
-        $sessionData = array(
-            "uid"           => $insertMemberId,
-            "token"         => $this->createSessionId(),
-            "expires_time"  => time() + (3600 * 24 * 7)
-        );
-        $insertSession = M("Mysession")->data($sessionData)->fetchSql(false)->add();
-        $updateBindData = array(
-            "uid"   =>$insertMemberId
-        );
-        $updateBind = M("AccountBind")->where(array('id'=>I('post.bind_id')))->data($updateBindData)->save();
-        if(!$insertMemberId || !$insertSession || !$updateBind) {
+        $insertResult = M("Member")->data($memberData)->fetchSql(false)->add();
+        if(!$insertResult) {
             $model->rollback();
             $backData = array(
                 "code" =>13002,
@@ -150,15 +142,43 @@ class AccountController extends Controller {
             return $this->ajaxReturn($backData);      
         }
 
+        // 1.2 获取openid
+        $code = I('post.mpcode');
+        $Http = new \Org\Net\Http();
+        $url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.APP_ID.'&secret='.APP_KEY.'&js_code='.$code.'&grant_type=authorization_code';
+        $result = json_decode($Http->sendHttpRequest($url),true);
+        if(!isset($result['openid'])) {
+            $backData = array(
+                "code" =>12001,
+                "msg"  =>'微信登陆连接失败',
+                "data" =>array(
+                    "info"  =>$result
+                )
+            );
+            $this->ajaxReturn($backData);
+        }
+
+        $openid = $result['openid'];
+        $wxSessionkey = $result['session_key'];
+
         $model = M();
         $model->startTrans();
-        // update session
         $accessToken = $this->createSessionId();
+        // update session or insert session
+        $sessionInfo = M("Mysession")->where(array("uid"=>$memberInfo['id']))->find();
         $sessionData = array(
+            "openid"=>$openid,
             "token" =>$accessToken,
             "expires_time"  => time() + (3600 * 24 * 7)
         );
-        $updateSession = M("Mysession")->where(array("uid"=>$memberInfo['id']))->data($sessionData)->fetchSql(false)->save();
+        if($sessionInfo) {
+            $sessionResult = M("Mysession")->where(array("uid"=>$memberInfo['id']))->data($sessionData)->fetchSql(false)->save();
+        }else {
+            $sessionData["uid"] = $memberInfo['id'];
+            $sessionResult = M("Mysession")->data($sessionData)->fetchSql(false)->add();
+        }
+
+
         // update member
         $memberData = array(
             "error_time"    => 0,
@@ -166,7 +186,7 @@ class AccountController extends Controller {
 
         );
         $updateMemer = M("Member")->where(array("id"=>$memberInfo['id']))->data($memberData)->fetchSql(false)->save();
-        if(!$updateSession || $updateMemer === false) {
+        if(!$sessionResult || $updateMemer === false) {
             $model->rollback();
             $backData = array(
                 "code" =>13004,
@@ -225,14 +245,14 @@ class AccountController extends Controller {
         $memberCondition = array(
             "openid"    =>$openid
         );
-        $accountInfo = M("Member")->where($memberCondition)->find();
-        if($accountInfo) {
+        $sessionInfo = M("Mysession")->where($memberCondition)->fetchSql(false)->find();
+        if($sessionInfo) {
             // 更新SESSION Token
             $updateData = array(
                 "token" =>$accessToken,
                 "expires_time"  => time() + (3600 * 24 * 7)
             );
-            $updateSession = M("Mysession")->where(array("uid"=>$accountInfo['id']))->save($updateData);
+            $updateSession = M("Mysession")->where(array("id"=>$sessionInfo['id']))->save($updateData);
             if($updateSession !== false){
                 $backData = array(
                     "code" =>200,
@@ -306,9 +326,9 @@ class AccountController extends Controller {
     public function getMemberId(){
         $accessToken = $_SERVER["HTTP_X_ACCESS_TOKEN"];
         $memberId = null;
-        $memberInfo = M("Mysession")->field("uid")->where(array("token"=>$accessToken))->find();
-        if($memberInfo){
-            $memberId = intval($memberInfo['uid']);
+        $sessionInfo = M("Mysession")->field("uid")->where(array("token"=>$accessToken))->fetchSql(false)->find();
+        if($sessionInfo){
+            $memberId = intval($sessionInfo['uid']);
         }
         return $memberId;
     }
@@ -491,7 +511,7 @@ class AccountController extends Controller {
         $codeMode = M("SmsCode");
         $prevTime = $codeMode->field("id,create_time")->where("phone=$phone")->fetchSql(false)->find();
         $curTime = time();
-        if($prevTime && $curTime - $prevTime['create_time'] < 60){
+        if($prevTime && $curTime < $prevTime['create_time']){
             $backData = array(
                 "code"     =>13002,
                 "msg"      =>"发送过于频繁"
@@ -545,7 +565,7 @@ class AccountController extends Controller {
             $codeResult = false;
             $dataArr = array(
                 "code"          =>$code,
-                "create_time"   =>time()
+                "create_time"   =>time()+60
             );
             if($prevTime){
                 $codeResult = $codeMode->where("id=".$prevTime['id'])->data($dataArr)->save();
@@ -595,19 +615,18 @@ class AccountController extends Controller {
 
     /** 
      * 手机号绑定
-     * actype 1绑定手机,2:更换手机
+     * actype 1绑定手机,
      */
     public function bindphone(){
         $memberId = $this->getMemberId();
         //1.1检测验证码
-        $acType = I("post.actype");
         $phone = I("post.phone");
         $code = I("post.code");
         $verifyCondition = array(
             "phone" =>$phone,
             "code"  =>$code
         );
-        $vertifyNum = M("VerifyCode")->where($verifyCondition)->count();
+        $vertifyNum = M("SmsCode")->where($verifyCondition)->fetchSql(false)->count();
         if(0 == $vertifyNum){
             $backData = array(
                 "code"     =>13001,
@@ -616,16 +635,14 @@ class AccountController extends Controller {
             $this->ajaxReturn($backData);
         }
 
-        // 1.1.1 检测新旧号码是否一样
-        if($acType == 2){
-            $memberInfo = M("Member")->field("phone")->where("id=$memberId")->find();
-            if($phone == $memberInfo['phone']){
-                $backData = array(
-                    "code"     =>13011,
-                    "msg"      =>"新号码与原号码相同"
-                );
-                $this->ajaxReturn($backData); 
-            }
+        // 1.1.1 检测号码是否存在
+        $accountInfo = M("Member")->field("id")->where(array("phone"=>$phone))->fetchSql(false)->find();
+        if($accountInfo){
+            $backData = array(
+                "code"     =>13002,
+                "msg"      =>"该手机号码已被占用"
+            );
+            $this->ajaxReturn($backData); 
         }
 
         $model = M();
@@ -634,22 +651,20 @@ class AccountController extends Controller {
         //1.2 更新用户表
         $addBalanceVal = 10;
         $updateData =array(
-            "phone"             =>$phone,
-            "mp_identification" =>1
+            "phone"             =>$phone
         );
         $updateMember = M("Member")->where("id=".$memberId)->fetchSql(false)->save($updateData);
 
 
         //1.3 增加余额
         $addBalanceResult = true;
-        if($acType == 1){
-            // $addBalanceResult = $this->addBalance($addBalanceVal,"手机号绑定奖励",$memberId);
-        }
+        // $addBalanceResult = $this->addBalance($addBalanceVal,"手机号绑定奖励",$memberId);
         
         if($updateMember && $addBalanceResult){
             $backData = array(
                 "code"     =>200,
-                "msg"      =>"绑定成功"
+                "msg"      =>"success",
+                "data"  =>array("tips"=>"绑定成功")
             ); 
             // $backData['errorMsg'] = $acType==1? "恭喜您完成手机号绑定，并获得".(int)$addBalanceVal."元现金奖励" : "已绑定为新手机号码";
             $model->commit();

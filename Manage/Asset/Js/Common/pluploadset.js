@@ -1,6 +1,6 @@
 require.config({
     "paths":{
-        "Plupload": "/xinzhi/Public/lib/plupload-2.1.2/js/plupload.full.min"
+        "Plupload": rootDir+"/Public/lib/plupload-2.1.2/js/plupload.full.min"
     }
     
 });
@@ -23,12 +23,12 @@ define(["Plupload"],function() {
         {
             var xmlhttp = null;
             var sourceType;
-            sourceType = $("#js-section-type").val();
-            if(!sourceType){
-                alert("请选择类型");
-                return
+            if($("#js-section-type").size()) {
+                sourceType = $("#js-section-type").val();
+            }else {
+                sourceType=3
             }
-            console.log(sourceType);
+
             if (window.XMLHttpRequest)
             {
                 xmlhttp=new XMLHttpRequest();
@@ -40,7 +40,7 @@ define(["Plupload"],function() {
           
             if (xmlhttp!=null)
             {
-                serverUrl = 'http://localhost/xinzhi/admin.php/Manage/Ossapi/index/type/'+sourceType
+                serverUrl = 'http://localhost/gongfu/admin.php/Manage/Ossapi/index/type/'+sourceType
                 xmlhttp.open( "GET", serverUrl, false );
                 xmlhttp.send( null );
                 return xmlhttp.responseText
@@ -169,7 +169,7 @@ define(["Plupload"],function() {
             url : 'http://oss.aliyuncs.com',
         
             filters: {
-                mime_types : [ //只允许上传图片和zip,rar文件
+                mime_types : [ //只允许上传图片和音视频文件
                 { title : "Image files", extensions : "jpg,gif,png,bmp" }, 
                 { title : "audio video files", extensions : "mpg,m4v,mp4,mp3,flv,3gp,mov,avi,rmvb,mkv,wmv" }
                 // { title : "Zip files", extensions : "zip,rar" }

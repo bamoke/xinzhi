@@ -25,11 +25,11 @@ class CourseController extends AuthController
         $where = "1 = 1";
         $courseList = $courseModel
             ->alias("c")
-            ->field("c.id,c.title,c.thumb,c.isfree,c.price,c.buy_num,c.comment_num,c.recommend,c.order_no,c.status,t.name as teacher_name,mc.name as cate_name")
+            ->field("c.id,c.title,c.thumb,c.isfree,c.price,c.buy_num,c.comment_num,c.recommend,c.status,t.name as teacher_name,mc.name as cate_name")
             ->join("__TEACHER__ as t on c.teacher_id = t.id")
             ->join("__MAIN_CATE__ as mc on c.cate_id = mc.id")
             ->where($where)
-            ->order('c.recommend desc,c.order_no,c.id desc')->limit($page->firstRow.",".$page->listRows)->select();
+            ->order('c.recommend desc,c.sort,c.id desc')->limit($page->firstRow.",".$page->listRows)->select();
         $outData = array(
             'list'      => $courseList,
             'paging'    => $paging,
@@ -54,13 +54,15 @@ class CourseController extends AuthController
     public function edit($id){
         $cateModel = D('Category');
         $cateList = $cateModel->getCate('course');
+        $orgList = M("Org")->field('id,name')->where(array("status"=>1))->select();
         $teacherList = M("Teacher")->field('id,name')->where(array("status"=>1))->select();
         $courseInfo = M("Course")->where(array('id'=>$id))->find();
         $outData = array(
             'courseInfo'      => $courseInfo,
             "script"=>CONTROLLER_NAME."/main",
             "cateList" =>$cateList,
-            "teacherList"  =>$teacherList
+            "teacherList"  =>$teacherList,
+            "orgList"=>$orgList
         );
         $this->assign('output',$outData);
         $this->assign('pageName',"编辑课程");
@@ -73,12 +75,15 @@ class CourseController extends AuthController
         $cateModel = D('Category');
         $cateList = $cateModel->getCate('course');
         $teacherList = M("Teacher")->field('id,name')->where(array("status"=>1))->select();
+        $orgList = M("Org")->field('id,name')->where(array("status"=>1))->select();
         $outData = array(
             "script"=>CONTROLLER_NAME."/main",
             "cateList"=>$cateList,
-            "teacherList"=>$teacherList
+            "teacherList"=>$teacherList,
+            "orgList"=>$orgList
         );
         $this->assign('output',$outData);
+        $this->assign('pageName',"添加课程");
         $this->display();
     }
 
@@ -143,6 +148,9 @@ class CourseController extends AuthController
             $model = M("Course");
             $result = $model->create($_POST);
 
+            if($_POST['isfree'] == 1) {
+                $model->price= 0.00;
+            }
             if($result){
                 if($_FILES['thumb']['tmp_name']){
                     //图片处理
@@ -156,7 +164,6 @@ class CourseController extends AuthController
                     }
                 }
                 $add = $model->fetchSql(false)->add();
-//                var_dump($add);
                 if($add){
                     $backData['status'] = 1;
                     $backData['msg'] = "添加成功";
@@ -183,7 +190,7 @@ class CourseController extends AuthController
         $typeArr = array('',"图文","音频","视频");
         $sectionModel = M("CourseSection");
         $sectionList = $sectionModel->field('id,title,type,view_num')->where(array('course_id'=>$cid))->select();
-        $courseInfo = M("Course")->field('id,title,price,status,buy_num,comment_num,description')->where(array('id'=>$cid))->find();
+        $courseInfo = M("Course")->field('id,title,isfree,price,status,study_num,thumb,description')->where(array('id'=>$cid))->find();
         $outData = array(
             "script"=>CONTROLLER_NAME."/main"
         );
@@ -234,7 +241,7 @@ class CourseController extends AuthController
                     $model->commit();
                     $backData['status'] = 1;
                     $backData['msg'] = "保存成功";
-                    $backData['jump'] = U('section',array('cid'=>I('post.cid')));
+                    $backData['jump'] = U('section',array('cid'=>I('post.course_id')));
                 }else {
                     $model->rollback();
                     $backData['status'] = 0;
@@ -260,12 +267,13 @@ class CourseController extends AuthController
             $model = M("CourseSection");
             $result = $model->create($_POST);
             if($result){
-
+                if(!isset($_POST['isfree'])) {
+                    $model->isfree = 0;
+                }
                 $update = $model->where('id='.$_POST['id'])->fetchSql(false)->save();
                 if($update !== false){
                     $backData['status'] = 1;
                     $backData['msg'] = $update === 0 ? "数据没有变动":"修改成功";
-
                 }else {
                     $backData['status'] = 0;
                     $backData['msg'] = $model->getError();

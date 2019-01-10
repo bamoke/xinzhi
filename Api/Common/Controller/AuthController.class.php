@@ -48,6 +48,6 @@ class AuthController extends Controller
     protected function fetchUid (){
         $token = $_SERVER["HTTP_X_ACCESS_TOKEN"];
         $sessionResult = M("Mysession")->field("uid")->where(array("token"=>$token))->find();
-        return $sessionResult["uid"];
+        return intval($sessionResult["uid"]);
     }
 }

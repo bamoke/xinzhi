@@ -40,6 +40,12 @@ textarea {
     resize: none;
 }
 
+/***/
+.panel-heading {
+    /* background-color:#f1f1f1; */
+    margin-bottom:12px;
+    border-bottom:1px solid #f1f1f1;
+}
 #header {
     padding-left: 10px;
     padding-right: 20px;
@@ -230,7 +236,13 @@ textarea {
     height: 4px;
     transition: all .6s;
 }
-
+#login-background {
+    width:100%;
+    height: 100%;
+    background-image:url("images/login-background.jpg");
+    background-size:cover;
+    opacity: .6;
+}
 .login-form-wrap {
     position: fixed;
     top: 50%;
@@ -241,9 +253,10 @@ textarea {
     padding: 20px;
     width: 400px;
     min-height: 300px;
-    background-color: rgba(255, 255, 255, .5);
+    background-color: rgba(0, 0, 0, .7);
     border: 1px solid transparent;
     box-shadow: 0 0 5px rgba(0, 0, 0, .6);
+    color:#fff;
 }
 
 .m-sub-nav {

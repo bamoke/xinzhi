@@ -10,8 +10,13 @@
                 <div class="info">
                     <div class="title">{$courseInfo['title']}</div>
                     <div class="desc">{$courseInfo['description']}</div>
-                    <div class="price">￥{$courseInfo['price']}</div>
-                    <div class="total-info"><span>开通人数:{$courseInfo['buy_num']}</span></div>
+                    <if condition="$courseInfo['isfree']" value="1">
+                        <div class="text-success">免费</div>
+                        <else/>
+                        <div class="price">￥{$courseInfo['price']}</div>
+                    </if>
+                    
+                    <div class="total-info"><span>学习人数:{$courseInfo['study_num']}</span></div>
                 </div>
             </div>
             <div class="right-info">

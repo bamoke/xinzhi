@@ -33,7 +33,42 @@
                 </div>
                 <div class="col-xs-3 tips"></div>
             </div>
-
+            <div class="form-group">
+                    <label class="control-label col-xs-2">招生人数:</label>
+                    <div class="col-xs-2">
+                        <input type="text" name="person_limit" value="{$info['person_limit']}" placeholder="请填入整数" class="form-control js-price">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">报名截止日期:</label>
+                    <div class="col-xs-2">
+                        <input type="text" name="enroll_limit" value="{$info['enroll_limit']}" placeholder="如:2018-12-01" class="form-control js-price">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">价格:</label>
+                    <div class="col-xs-2">
+                        <input type="text" name="price" value="{$info['price']}" placeholder="请填入整数或小数" class="form-control js-price">
+                    </div>
+                    <div class="col-xs-2"><label class="control-label"><input type="checkbox" name="has_yh" value="1" id="js-set-yh"  <eq name="info['has_yh']" value="1">checked</eq> >设置优惠</label> </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">优惠价:</label>
+                    <div class="col-xs-2">
+                        <input type="text" name="yh_price" value="{$info['yh_price']}" <eq name="info['has_yh']" value="0">disabled</eq>  placeholder="请填入整数或小数" class="form-control js-yh-input js-price">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-2">优惠截止日期:</label>
+                    <div class="col-xs-2">
+                        <input type="text" name="yh_limit" value="{$info['yh_limit']}" <eq name="info['has_yh']" value="0">disabled</eq> placeholder="如:2018-12-01" class="form-control js-yh-input js-price">
+                    </div>
+                    <div class="col-xs-3 tips"></div>
+                </div>
 
 
             <div class="form-group">
@@ -64,13 +99,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="control-label col-xs-2">价格:</label>
-                <div class="col-xs-2">
-                    <input type="text" name="price" value="{$info['price']}" placeholder="请填入整数或小数" class="form-control js-price">
-                </div>
-                <div class="col-xs-3 tips"></div>
-            </div>
+
             <div class="form-group">
                 <div class="col-xs-offset-2 col-xs-1"><button type="button" class="form-control btn-default" onclick="window.history.back()">返回</button></div>
                 <div class="col-xs-2"><button type="submit" class="form-control btn-info">提交</button></div>

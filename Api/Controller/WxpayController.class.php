@@ -40,14 +40,13 @@ class WxpayController {
 
 
                     //1.判断是否扣除了余额
-                    $orderGoods = unserialize($orderInfo['goods'])[0];
-                    $amountDiff = (float)$orderGoods['pro_price'] - $orderInfo['amount'];
                     $balanceUpdate =  true;
+/*                     $orderGoods = unserialize($orderInfo['goods'])[0];
+                    $amountDiff = (float)$orderGoods['pro_price'] - $orderInfo['amount'];
+                    
                     if($amountDiff > 0){
-/*                         $balanceSql = "update __MEMBER__ set balance=balance-".$amountDiff." where id=".$memberId;
-                        $balanceUpdate = M()->execute($balanceSql); */
                         $balanceUpdate = A("Account")->subBalance($amountDiff,"商品购买扣除",$memberId);
-                    }
+                    } */
 
                     //2.加入我的商品
                     $myGoodsData = array(
@@ -61,15 +60,70 @@ class WxpayController {
                     }
                     $myGoodsInsert = M("MyGoods")->data($myGoodsData)->add();
 
+                    // 插入商品拥有记录 & 更新产品信息
+                    $insertProLog = true;
+                    $insertLogData = array(
+                        "member_id" =>$orderInfo['member_id']
+                    );
+                    $updatePro = true;
+                    $updateProData = array();
+                    $updateCondition =array(
+                        "id"    =>$orderInfo['pro_id']
+                    );
+                    switch($orderInfo['order_type']){
+                        case 1:
+                        // 判断是否有记录,如果有记录则续费而不是新增
+                        $columnLogInfo = M("ColumnistStudent")
+                        ->where(array("member_id"=>$orderInfo['member_id'],"column_id"=>$orderInfo['pro_id']))
+                        ->find();
+                        if($columnLogInfo){
+                            $updateColumnStudent = M("ColumnistStudent")
+                            ->where(array('id'=>$columnLogInfo['column_id']))
+                            ->data(array("deadline"=>strtotime("+1 year")))
+                            ->save();
+                            if(!$updateColumnStudent) {
+                                $insertProLog = false;
+                                $updatePro = false;
+                            }
+                        }else {
+                            $insertLogData['column_id'] = $orderInfo['pro_id'];
+                            $insertLogData['deadline'] = strtotime("+1 year");
+                            $insertProLog = M("ColumnistStudent")->data($insertLogData)->add();
+
+                            $updateProData['buy_num'] = array('exp',"buy_num+1");
+                            $updateProData['subscribers'] = array('exp',"subscribers+1");
+                            $updatePro = M("Columnist")->where($updateCondition)->data($updateProData)->save();
+                        }
+
+                        break;
+
+                        // 课程
+                        case 2:
+                        $insertLogData['course_id'] = $orderInfo['pro_id'];
+                        $insertProLog = M("CourseStudent")->data($insertLogData)->add();
+
+                        $updateProData['buy_num'] = array('exp',"buy_num+1");
+                        $updateProData['study_num'] = array('exp',"study_num+1");
+                        $updatePro = M("Course")->where($updateCondition)->data($updateProData)->save();
+                        break;
+
+                        // 线下报名
+                        case 3:
+                        $insertLogData['booking_id'] = $orderInfo['pro_id'];
+                        $insertProLog = M("BookingLog")->data($insertLogData)->add();
+
+                        $updateProData['enroll_person'] = array('exp',"enroll_person+1");
+                        $updatePro = M("Booking")->where($updateCondition)->data($updateProData)->save();
+                        break;
+
+                    }
+
                     //3.修改订单状态
                     $updateOrder = $orderModel->where($where)->data(array('status' => 2, "trade_num" => $tradeNum,"pay_time"=>$weData->time_end))->save();
 
-                    //4.更新产品购买数
-                    $updatePro = $this->updateBuyNum($orderInfo['order_type'],$orderInfo['pro_id']);
-
 
                     //5. 判断事务
-                    if ($balanceUpdate && $myGoodsInsert && $updateOrder && $updatePro) {
+                    if ($balanceUpdate && $myGoodsInsert && $updateOrder && $updatePro && $insertProLog) {
                         $mode->commit();
                         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     } else {

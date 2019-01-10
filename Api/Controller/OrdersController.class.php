@@ -6,17 +6,75 @@ use Api\Common\Controller\AuthController;
 class OrdersController extends AuthController
 {
 
+    /**
+     * 订单确认
+     * @params  type    1:专栏;2:课程;3:线下;
+     * @params  proid
+     */
+    public function confirm(){
+        if(empty($_GET['type']) && empty($_GET['proid'])) {
+            $backData = array(
+                "code" => 10001,
+                "msg" => "参数错误"
+            );
+            return $this->ajaxReturn($backData);
+        }
+        $type = I("get.type/d");
+        $proId = I("get.proid");
+        $thumbUrl = XZSS_BASE_URL .'/thumb/';
+        switch($type) {
+            case 1:
+            $tableName = "Columnist";
+            break;
+            case 2:
+            $tableName = "Course";
+            break;
+            case 3:
+            $tableName = "Booking";
+            break;
+        }
+        $proInfo = M($tableName)
+        ->field("id,CONCAT('$thumbUrl',thumb) as thumb,title,price,has_yh,yh_limit,yh_price")
+        ->where(array("id"=>$proId))
+        ->find();
+        // 1.1 计算优惠是否过期,计算优惠金额
+        $favourableAmount = 0;
+        $total = $proInfo['price'];
+        if($proInfo['has_yh'] == 1){
+            $oldYhLimit = strtotime($proInfo['yh_limit']);
+            if($oldYhLimit > time()){
+                $favourableAmount = (($proInfo['price']*100) - ($proInfo['yh_price']*100))/100;
+                $total = $proInfo['yh_price'];
+            }else {
+                $proInfo['has_yh'] = 0;
+            }
+        }
+        $backData = array(
+            "code" =>200,
+            "msg"  =>"success",
+            "data" =>array(
+                "goodsInfo"     =>$proInfo,
+                "favourable"       =>$favourableAmount,
+                "total"         =>$total,
+                "ordersType"  =>$type
+            )
+        );
+        $this->ajaxReturn($backData);
+        
+    }
     /***
      * 创建订单
      */
-    public function create($type,$proid)
+    public function create()
     {
+        $type = I("get.type/d");
+        $proid = I("get.proid/d");
         $memberId = $this->uid;
-
         //检测是否已经购买过
         $haveCondition = array(
             "member_id" =>$memberId,
-            "pro_id"    =>$proid
+            "pro_id"    =>$proid,
+            "type"      =>$type
         );
         $isHave = M("MyGoods")->where($haveCondition)->find();
         if($isHave){
@@ -26,44 +84,50 @@ class OrdersController extends AuthController
             );
             return $this->ajaxReturn($backData);
         }
-        
-        //根据类别设置数据内容；type 1:专栏;2:课程;3:测试;4:在线预约,5:赠送,
+        //根据类别设置数据内容；type 1:专栏;2:课程;3:线下预约,
         $proModelName = '';
-        $proField = 'id,title,teacher_id,thumb,price';
+        $proField = "id,title,org_id,thumb,price,has_yh,yh_limit,yh_price";
         $orderName = '';
         switch ($type) {
             case 1:
                 $proModelName = 'Columnist';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
-                $orderName = '开通专栏:';
+                $orderName = '开通专栏';
                 break;
             case 2:
                 $proModelName = 'Course';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
-                $orderName = '购买课程:';
+                $orderName = '购买课程';
                 break;
             case 3 :
-                $proModelName = 'TestsList';
-                $proField = 'id,title,price';
+                $proModelName = 'Booking';
                 $proInfo = M($proModelName)->field($proField)->where(array('id' => $proid))->find();
-                $orderName = '购买测试题:';
-                break;
-            case 4:
-                $phaseInfo = M("BookingPhase")->field('booking_id,title')->where(array('id' => $proid))->find();
-                $bookingInfo = M("Booking")->field("title,thumb,price")->where("id=".$phaseInfo['booking_id'])->find();
-                $proInfo = array(
-                    "title" =>$bookingInfo['title']."-".$phaseInfo['title'],
-                    "thumb" =>$bookingInfo['thumb'],
-                    "price" =>$bookingInfo['price']
-                );
-                $orderName = '在线预约:';
+                $orderName = '线下预约';
                 break;
         }
 
-        
+        $orderAmount = $proInfo['price'];
+        /**
+         * 计算订单金额，检测是否有限时优惠和抵扣优惠券
+         */
+        // 2.1
+
+        if($proInfo['has_yh'] == 1){
+            $oldYhLimit = strtotime($proInfo['yh_limit']);
+            if($oldYhLimit > time()){
+                $orderAmount = $proInfo['yh_price'];
+            }
+        }
+        // 2.2 抵扣优惠券
+        if(isset($_GET['couponid']) && $_GET['couponid']) {
+            //待完善 by:2019-01-09
+            $couponInfo = array();
+        }
+
         //获取余额
+        $Account = A("Account");
         $balance = $Account->fetchBalance();
-        $orderAmount = $proInfo['price'] - $balance;
+        $orderAmount -= $balance;
 
         //创建订单
         $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
@@ -71,14 +135,13 @@ class OrdersController extends AuthController
             "pro_id" => $proid,
             "pro_type" => $type,
             "pro_name" => $proInfo['title'],
-            "pro_price" => $proInfo['price']
+            "pro_price" => $proInfo['price'],
+            "pro_thumb" => XZSS_BASE_URL .'/thumb/'.$proInfo['thumb']
         ));
-        if ($type != 3) {
-            $goodsData[0]['pro_thumb'] = $proInfo['thumb'];
-        }
 
         $orderData = array(
             "order_num" => $orderNum,
+            "org_id"    =>$proInfo['org_id'],
             "member_id" => $memberId,
             "pro_id" => $proid,
             "order_type" => $type,
@@ -86,9 +149,6 @@ class OrdersController extends AuthController
             "goods" => serialize($goodsData)
         );
         
-        if ($type == 1 || $type == 2) {//课程和专栏有讲师ID
-            $orderData['teacher_id'] = $proInfo['teacher_id'];
-        }
 
         //开启事务
         $model = M();
@@ -143,7 +203,7 @@ class OrdersController extends AuthController
             $orderInsert = $orderModel->data($orderData)->fetchSql(false)->add();
 
             //创建统一下单
-            $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/index";//支付成功回调地址
+            $backUrl = "http://www.xinzhinetwork.com/gongfu/api.php/Wxpay/index";//支付成功回调地址
             $payMentXml = $this->tyxd($orderName, $orderNum, $orderAmount,$backUrl);
             $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
             if ($payMentObj->return_code == 'SUCCESS') {
@@ -160,6 +220,7 @@ class OrdersController extends AuthController
 
                 $resInfo = $signArr;
                 $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
+                $resInfo['orderNo'] = $orderNum;
                 $backData = array(
                     "code" => 200,
                     "msg" => "success",
@@ -182,164 +243,10 @@ class OrdersController extends AuthController
     }
 
 
-    /** 
-     * buy present
-     */
-    public function buypresent(){
-
-        $memberId = $this->uid;
-        $Account = A('Account');
-        //1.2获取
-        $proId = I("post.proid");
-        $orderType = I("post.type");
-        $proType = I("post.protype");
-        $proModelName = $proType ==1 ? "Columnist" : "Course";
-        $proInfo = M($proModelName)->field("title,price,thumb")->where("id=$proId")->find(); 
-
-        $orderName = "购买赠送礼品包";
-        $orderNum = time() . str_pad($memberId, 7, 0, STR_PAD_LEFT) . str_pad(rand(1, 999), 3, 0, STR_PAD_LEFT);
-        $backUrl = "http://www.xinzhinetwork.com/api.php/Wxpay/present/";//支付成功回调地址
-
-        //1.3 获取账户余额,如果金额足够，直接完成购买
-        $balance = $Account->fetchBalance();
-        $orderAmount = $proInfo['price'] - $balance;
-        $orderGoodsData = array(array(
-            "pro_id" => $proId,
-            "pro_type" => $proType,
-            "pro_name" => $proInfo['title'],
-            "pro_price" => $proInfo['price'],
-            "pro_thumb" => $proInfo['thumb']
-        ));
-        if($balance >= $proInfo['price']){
-            //1.3.1
-            $model = M();
-            $model->startTrans();
-            //member
-            $updateData = array(
-                "balance"   =>$balance - $proInfo['price']
-            );
-            $updateBalance = $Account->subBalance($proInfo['price'],$orderName."扣除",$memberId);
-
-            //present
-            $insertData = array(
-                "member_id"     =>$memberId,
-                "pro_type"      =>$proType,
-                "pro_id"        =>$proId,
-                "secret"        =>md5($orderNum)
-            );
-            $url ="";
-/*             switch($proType){
-                case 1:
-                $url .= "column/column-detail/index";
-                break;
-                case 2:
-                $url .= "course/detail/index";
-                break;
-            } */
-            $giftContent = array(
-                "proid"     =>$proId,
-                "title"     =>$proInfo['title'],
-                "value"     =>$proInfo['price'],
-                "thumb"     =>$proInfo['thumb'],
-                "url"       =>$url
-            );
-            $insertData['content'] = serialize($giftContent);
-            $presentInsert = M("Present")->add($insertData);
-            //order
-
-            $orderData = array(
-                "order_num" => $orderNum,
-                "member_id" => $memberId,
-                "order_type"  => $orderType,
-                "amount"    => $proInfo['price'],
-                "goods"     => serialize($orderGoodsData),
-                "status"    =>2,
-                "pay_way"   =>"余额",
-                "pay_time"  =>date("YmdHis",time())
-            );
-            $orderInsert = M("Orders")->data($orderData)->add();
-            if($updateBalance && $presentInsert && $orderInsert){
-                $model->commit();
-                $backData = array(
-                    "errorCode" => 10000,
-                    "errorMsg" => "购买成功",
-                    "key"       => $insertData['secret']
-                );
-            }else {
-                $model->rollback();
-                $backData = array(
-                    "errorCode" => 10001,
-                    "errorMsg" => "系统繁忙，请稍后再试"
-                );
-            }
-            $this->ajaxReturn($backData);
-        }else {
-            $model = M();
-            $model->startTrans();
-            //1.3.2 创建订单
-            $orderData = array(
-                "order_num" => $orderNum,
-                "member_id" => $memberId,
-                "order_type"  => $orderType,
-                "amount"    => $orderAmount,
-                "goods"     => serialize($orderGoodsData),
-                "status"    =>1
-            );
-            $orderInsert = M("Orders")->data($orderData)->add();
+ 
 
 
-            //1.3.4 创建统一下单
-            $payMentXml = $this->tyxd($orderName, $orderNum, $orderAmount,$backUrl);
-            $payMentObj = simplexml_load_string($payMentXml, null, LIBXML_NOCDATA);
-            if ($payMentObj->return_code != 'SUCCESS'){
-                $backData = array(
-                    "code" => 13004,
-                    "masg" => "统一下单创建错误",
-                    "info" => $payMentObj
-                );
-                $model->rollback();
-                $this->ajaxReturn($backData);
-            }
 
-            if(!$orderInsert){
-                $backData = array(
-                    "code" => 13003,
-                    "msg" => "数据写入错误"
-                );
-                $model->rollback();
-                $this->ajaxReturn($backData);
-            }
-
-            
-            //支付数据签名
-            $payMentArr = json_decode(json_encode($payMentObj), true);
-            $signArr = array(
-                'appId' => $payMentArr['appid'],
-                'timeStamp' => (string)time(),
-                "nonceStr" => createRandom(16),
-                "package" => 'prepay_id=' . $payMentArr['prepay_id'],
-                "signType" => "MD5"
-            );
-
-            $resInfo = $signArr;
-            $resInfo['sign'] = wxSign($signArr,MERCHANT_SECRET);
-            $backData = array(
-                "code" => 200,
-                "msg" => "success",
-                "data"=>array(
-                    'payMent' => $resInfo,
-                    "key"   =>md5($orderNum)
-                )
-            );
-
-            $model->commit();
-
-            $this->ajaxReturn($backData);
-        }
-        
-
-
-    }
 
     
 
@@ -507,6 +414,37 @@ class OrdersController extends AuthController
                 "msg" => "操作错误"
             );
         }
+        $this->ajaxReturn($backData);
+    }
+
+    /**
+     * 订单信息
+     */
+    public function detail(){
+        if(empty($_GET['orderno'])){
+            $backData = array(
+                "code" => 10001,
+                "msg" => "参数错误"
+            );
+            return $this->ajaxReturn($backData);
+        }
+        $orderNo = I("get.orderno");
+        $orderInfo = M("Orders")->where(array('order_num'=>$orderNo))->find();
+        $backData = array(
+            "code" => 200,
+            "msg" => "success",
+            "data"      =>array(
+                "goodsInfo" =>unserialize($orderInfo['goods'])[0],
+                "derateInfo"=>array(),
+                "orderInfo" =>array(
+                    "orderNo"   =>$orderNo,
+                    "orderType" =>$orderInfo['order_type'],
+                    "tradeNo"   =>$orderInfo['trade_num'],
+                    "time"      =>$orderInfo['pay_time'],
+                    "amount"    =>$orderInfo['amount']
+                )
+            )
+        );
         $this->ajaxReturn($backData);
     }
 

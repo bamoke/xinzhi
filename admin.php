@@ -13,11 +13,11 @@ define("APP_DEBUG",true);
 define('STATIC_DEBUG',time());
 
 //定义应用名称,3.2可以不用定义
-define("APP_NAME","欣志小程序后台管理系统V1.0.1");
+define("APP_NAME","长辰功夫后台管理系统V1.0.1");
 
 //定义应用目录
 define("APP_PATH","./");
-define("ROOT","/xinzhi");
+define("ROOT","/gongfu");
 
 //设置是否生成目录安全文件
 define("BUILD_DIR_SECURE",false);
