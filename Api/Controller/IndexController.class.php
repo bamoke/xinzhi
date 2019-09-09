@@ -12,7 +12,7 @@ class IndexController extends Controller {
         $courseList = M("Course")->field("id,title,description,concat('$thumbUrl',thumb) as thumb,isfree,price,period,study_num,has_yh,yh_limit,yh_price")->where('status=1')->order('recommend desc,sort,id desc')->limit('4')->select();
         $article = M("News")->field("id,title,concat('$thumbUrl',img) as thumb")->where("status=1")->limit("4")->select();
         $booking = M("Booking")
-        ->field("id,title,concat('$thumbUrl',thumb) as thumb,price,enroll_person,person_limit")
+        ->field("id,title,concat('$thumbUrl',thumb) as thumb,LEFT(description,20)as description,price,enroll_person,person_limit")
         ->where("status=1")
         ->limit("4")
         ->select();
@@ -57,7 +57,8 @@ class IndexController extends Controller {
                 "column"     =>$columnList,
                 "course"    =>$courseList,
                 "article"      =>$article,
-                "booking"        =>$booking
+                "booking"        =>$booking,
+                "showBooking"   =>true
                 )
         );
         $this->ajaxReturn($backData);

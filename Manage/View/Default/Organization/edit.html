@@ -26,7 +26,7 @@
                                     </div>
                                     <input type="hidden" class="js-old-thumb" name="oldthumb" value="{$output['data']['logo']}">
                                 </empty>
-                                <input type="file" name="logo" class="js-file-input" style="opacity: 0" >
+                                <input type="file" name="thumb" class="js-file-input" style="opacity: 0" >
                             </div>
                         </div>
                     <div class="col-xs-3 tips">建议尺寸：250px×250px,格式jpg或png</div>
@@ -54,8 +54,8 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label col-xs-2">详细介绍:</label>
-                    <div class="col-xs-5">
-                        <textarea name="introduce" class="form-control" rows="5">{$output['data']['introduce']}</textarea>
+                    <div class="col-xs-8">
+                            <script id="editorContainer" name="introduce">{$output['data']['introduce']}</script>
                     </div>
                     <div class="col-xs-3 tips"></div>
                 </div>

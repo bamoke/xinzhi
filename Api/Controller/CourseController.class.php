@@ -87,7 +87,7 @@ class CourseController extends Controller {
             ->fetchSql(false)
             ->find();
         if($dataInfo){
-            $courseInfo['content'] = str_replace('src="/Upload/images','src='.XZSS_BASE_URL.'"/images',$courseInfo['content']);
+            $courseInfo['content'] = str_replace('src="/Upload/images','src="'.XZSS_BASE_URL.'/images',$courseInfo['content']);
         }
 
         // 1.1 计算优惠是否过期
@@ -127,7 +127,8 @@ class CourseController extends Controller {
                 "info"  =>$courseInfo,
                 "orgInfo"=>$orgInfo,
                 "isHas"     =>$hasCourse,
-                "isCollected"  =>$isCollected
+                "isCollected"  =>$isCollected,
+                "showOrg"   =>true
             )
         );
         $this->ajaxReturn($backData);

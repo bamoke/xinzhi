@@ -40,6 +40,7 @@ class OrganizationController extends AuthController
             $uploadDir = ROOT_DIR.'/Upload/';
             $result = $curModel->create();
             if($result){
+                $curModel->introduce = $_POST['introduce'];
                 if($_FILES['thumb']['tmp_name']){
                     //图片处理
                     $upload_conf=array(
@@ -100,6 +101,7 @@ class OrganizationController extends AuthController
             $uploadDir = ROOT_DIR.'/Upload/';
             $result = $curModel->create();
             if($result){
+                $curModel->introduce = $_POST['introduce'];
                 if($_FILES['thumb']['tmp_name']){
                     //图片处理
                     $upload_conf=array(
@@ -118,7 +120,7 @@ class OrganizationController extends AuthController
                         $backData['msg'] = $upload->getError();
                         return $this->ajaxReturn(json_encode($backData));
                     }else{
-                        $curModel->thumb = $uploadResult['savename'];
+                        $curModel->logo = $uploadResult['savename'];
                         $this->del_thumb($id);
                     }
                 }
